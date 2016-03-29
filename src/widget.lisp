@@ -1,3 +1,10 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; This file is a part of caveman2-widgets project.
+;;
+;; Copyright (c) 2016 Richard Paul Bäck (richard.baeck@free-your-pc.com)
+;; LICENSE: LLGPLv3
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (in-package :cl-user)
 (defpackage caveman2-widget
   (:use :cl

@@ -1,11 +1,9 @@
-#|
-  This file is a part of caveman2-widgets project.
-  Copyright (c) 2016 Richard Paul Bäck (richard.baeck@free-your-pc.com)
-|#
-
-#|
-  Author: Richard Paul Bäck (richard.baeck@free-your-pc.com)
-|#
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; This file is a part of caveman2-widgets project.
+;;
+;; Copyright (c) 2016 Richard Paul Bäck (richard.baeck@free-your-pc.com)
+;; LICENSE: LLGPLv3
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (in-package :cl-user)
 (defpackage caveman2-widgets-asd
@@ -13,7 +11,7 @@
 (in-package :caveman2-widgets-asd)
 
 (defsystem caveman2-widgets
-  :version "0.1"
+  :version "0.2"
   :author "Richard Paul Bäck"
   :license "LLGPL"
   :depends-on (:trivial-garbage
