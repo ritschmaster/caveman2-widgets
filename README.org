@@ -1,0 +1,31 @@
+* caveman2-widgets 
+** What is it
+caveman2-widgets is an extension library to [[https://github.com/fukamachi/caveman][caveman2]]. It is influenced
+by [[https://github.com/skypher/weblocks][Weblocks]] and introduces its widget system for the developer. By
+only using its widget concept it does not control the developer as
+much as Weblocks itself.
+
+** Usage
+
+#+BEGIN_SRC lisp
+(defclass <web> (<app>) ())
+(defvar *web* (make-instance '<web>))
+(clear-routing-rules *web*)
+;; the above code would be in src/web.lisp if you use caveman's MAKE-PROJECT function.
+
+(init-widgets *web*)
+#+END_SRC
+
+** Installation
+
+** Author
+
++ Richard Paul Bäck (richard.baeck@free-your-pc.com)
+
+** Copyright
+
+Copyright (c) 2016 Richard Paul Bäck (richard.baeck@free-your-pc.com)
+
+** License
+
+Licensed under the LLGPL License.
