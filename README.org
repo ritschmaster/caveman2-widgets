@@ -5,19 +5,120 @@ by [[https://github.com/skypher/weblocks][Weblocks]] and introduces its widget s
 only using its widget concept it does not control the developer as
 much as Weblocks itself.
 
-** Usage
+If you create a widget then routes for a REST API will be added
+automatically.
 
+** Usage
+*** General 
+The only important thing is to run the function INIT-WIDGETS with an
+<APP>. If you use caveman's MAKE-PROJECT function you will get file
+called "src/web.lisp". In this file you can adapt the following:
 #+BEGIN_SRC lisp
+
+(defpackage my-caveman2-webapp.web
+  (:use :cl
+        :caveman2
+        :caveman2-widgets ;; easy use of the external symbols of this project
+        :my-caveman2-webapp.config
+        :my-caveman2-webapp.view
+        :my-caveman2-webapp.db
+        :datafly
+        :sxql)
+  (:export :*web*))
+
+;; some other code
+
+;; the following will be generated through MAKE-PROJECT but is very important:
 (defclass <web> (<app>) ())
 (defvar *web* (make-instance '<web>))
 (clear-routing-rules *web*)
-;; the above code would be in src/web.lisp if you use caveman's MAKE-PROJECT function.
 
+
+;; the neccessary call to initialize the widgets:
 (init-widgets *web*)
+
+;; from now on you can do whatever you want
 #+END_SRC
 
-** Installation
+*** Global scope
+There are two scopes: /global/ and /session/. The global scope
+"limits" the widget to *all* users. Therefore if you create a stateful
+widget the state will be displayed to all users of your site. We
+supplied the method MAKE-WIDGET to generate new widgets. This method
+should be used, since it does all the background stuff for you. Use
+MAKE-WIDGET with :GLOBAL to get a globally scoped widget.
 
+A very simple example of what you can do with it:
+#+BEGIN_SRC lisp
+(defclass <global-widget> (<widget>)
+  ((enabled
+    :initform nil
+    :accessor enabled)))
+
+(defmethod render-widget ((this <global-widget>))
+  (if (enabled this)
+      "<h1>enabled!</h1>"
+      "<h1>not enabled</h1>"))
+
+(defmethod render-widget-rest ((this <global-widget>) (method (eql :get)) (args t))
+  (render-widget this))
+
+(defvar *global-widget* (make-widget :global '<global-widget>))
+
+(defroute "/" ()
+  (render-widget *global-widget*))
+
+(defroute "/disable" ()
+  (setf (enabled *global-widget*) nil)
+  "disabled it")
+
+(defroute "/enable" ()
+  (setf (enabled *global-widget*) t)
+  "enabled it")
+#+END_SRC
+
+*** Session scope
+The other option is to use a /session/ scope. This is a bit more
+tricky because all your /session/ widgets must be stored with the
+session. :SESSION is the keyword for MAKE-WIDGET to get a /session/
+widget. Of course you only need to save the top level (highest) widget
+of a widget tree in the session (the children will be saved where the
+parent is).
+
+An example (with children):
+#+BEGIN_SRC lisp
+(defclass <display-id-widget> (<widget>)
+  ())
+
+(defmethod render-widget ((this <display-id-widget>))
+  (concatenate 'string
+               "<h1>The id of your widget</h1>"
+               "<h2>It should be different for each session</h2>"
+               "<p>My id: "
+               (caveman2-widget::id this)
+               "</p>"))
+
+(defclass <session-widget> (<widget>)
+  ((id-widget
+    :initform (make-widget :session '<display-id-widget>)
+    :reader id-widget)))
+
+(defmethod render-widget ((this <session-widget>))
+  (render-widget (id-widget this)))
+
+(defroute "/" ()
+  (when (null (gethash :session-widget *session*))
+    (setf (gethash :session-widget *session*)
+          (make-widget :session '<session-widget>)))
+  (render-widget (gethash :session-widget *session*)))
+#+END_SRC
+** Installation
+*** Quicklisp
+Clone this repository into "~/quicklisp/local-projects" to QUICKLOAD
+it.
+*** Roswell
+Clone this repository into "~/.roswell/local-projects" to QUICKLOAD
+it.
 ** Author
 
 + Richard Paul Bäck (richard.baeck@free-your-pc.com)

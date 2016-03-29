@@ -1,16 +1,35 @@
 (in-package :cl-user)
 (defpackage caveman2-widget
-  (:use :cl)
+  (:use :cl
+        :caveman2)
   (:export :<widget>
            :render-widget
            :render-widget-rest
-           :init-widgets))
+           :init-widgets
+           :make-widget))
 (in-package :caveman2-widget)
 
 (defvar *rest-path* "rest")
 (defvar *rest-methods* '(:get :post :put :patch :delete :head :options))
 (defvar *web* nil
   "An <app>-instance")
+
+(defclass <widget-holder> ()
+  ((widgets
+    :initform '()
+    :allocation :class
+    :documentation "
+
+Holds all widgets and derived widgets of a specific session. If a
+widget is finalized it will be removed from this list
+automatically. This list is neccessary for the REST API to get exactly
+the given widget.")))
+
+(defgeneric append-widget (this widget))
+
+(defgeneric remove-widget (this widget))
+
+(defgeneric find-widget (this to-find))
 
 (defun init-widgets (webapp)
   (declare (<app> webapp))
@@ -26,28 +45,38 @@
     :accessor api-generated-p
     :allocation :class
     :documentation "To know if the REST API has been generated yet.")
-   (all-widgets
-    :initform '()
-    :accessor all-widgets
-    :allocation :class
-    :documentation "
-
-Holds all widgets and derived widgets of a specific session. If a
-widget is finalized it will be removed from this list
-automatically. This list is neccessary for the REST API to get exactly
-the given widget."))
+   (widget-holder
+    :initform (error "Must supply a widget-holder!")
+    :initarg :widget-holder
+    :reader widget-holder
+    :documentation "A widget holder object which stores all
+widgets. The widget-holder will be searched for a widget if the REST
+needs one."))
   (:documentation ""))
 
-(defgeneric find-widget (class to-find))
+(defmethod append-widget ((this <widget-holder>) (widget <widget>))
+  (setf
+   (slot-value this 'widgets)
+   (append (slot-value this 'widgets)
+           (list widget))))
 
-(defmethod find-widget ((class <widget>) (to-find string))
+(defmethod remove-widget ((this <widget-holder>) (widget <widget>))
+  (setf (slot-value this 'widgets)
+        (remove-if #'(lambda (item)
+                       (string= (slot-value item 'id)
+                                (slot-value widget 'id)))
+                   (slot-value this 'widgets))))
+
+
+
+(defmethod find-widget ((class <widget-holder>) (to-find string))
   (find-if  #'(lambda (item)
                 (declare (<widget> item))
                 (string= (id item)
                          to-find))
-            (all-widgets class)))
+            (slot-value this 'widgets)))
 
-(defmethod initialize-instance ((this <widget>) &key)
+(defmethod initialize-instance :after ((this <widget>) &key)
   "
 Generates a REST for the widget. It will automatically generate
 accessable URIs for the HTTP methods stored in *rest-methods*.
@@ -65,13 +94,12 @@ The REST can be accessed by the URI /*rest-path*/widget-name"
                                             1
                                             (- (length class-name) 1))))))
       (dolist (cur-method *rest-methods*)
-
         (setf (ningle:route *web*
                             rest-path
                             :method cur-method)
               #'(lambda (params)
                   (let ((found-widget
-                         (find-widget this
+                         (find-widget (widget-holder this)
                                       (cdr
                                        (assoc "id"
                                               params
@@ -83,19 +111,11 @@ The REST can be accessed by the URI /*rest-path*/widget-name"
                          params)
                         "404 Not found"))))))
     (setf (api-generated-p this) t))
-  (setf
-   (all-widgets this)
-   (append (all-widgets this)
-           (list this)))
+  (describe this)
+  (append-widget (widget-holder this) this)
   (trivial-garbage:finalize
    this
-   (let ((id (slot-value this 'id)))
-     (setf (all-widgets this)
-           (remove-if #'(lambda (item)
-                          (declare (<widget> item))
-                          (string= id (slot-value item 'id)))
-                      (all-widgets this)))))
-  (print             (all-widgets this)))
+   (remove-widget (widget-holder this) this)))
 
 (defgeneric render-widget (this)
   (:documentation "@return Returns the HTML representation of the
@@ -110,3 +130,23 @@ can do the following:
 
 (defmethod render-widget-rest ((this <widget>) (method (eql :get)))
   \"HTML output for the REST when GET.\")"))
+
+
+(defvar *global-widget-holder*
+  (make-instance '<widget-holder>))
+
+(defgeneric make-widget (scope class)
+  (:documentation ""))
+
+(defmethod make-widget ((scope (eql :global)) (class symbol))
+  (make-instance class
+                 :widget-holder *global-widget-holder*))
+
+(defmethod make-widget ((scope (eql :session)) (class symbol))
+  (let ((holder (gethash :widget-holder *session*)))
+    (when (null holder)
+      (setf holder (make-instance '<widget-holder>))
+      (setf (gethash :widget-holder *session*)
+            holder))
+    (make-instance class
+                   :widget-holder holder)))

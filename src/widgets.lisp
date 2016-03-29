@@ -5,5 +5,7 @@
   (:export :<widget>
            :render-widget
            :render-widget-rest
-           :init-widgets))
+           :init-widgets
+           :make-widget
+           :<widget-holder>))
 (in-package :caveman2-widgets)

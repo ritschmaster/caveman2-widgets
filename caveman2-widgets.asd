@@ -21,7 +21,7 @@
   :components ((:module "src"
                         :components
                         ((:file "widget")
-                         (:file "caveman2-widgets"))))
+                         (:file "widgets"))))
   :description ""
   :long-description
   #.(with-open-file (stream (merge-pathnames
