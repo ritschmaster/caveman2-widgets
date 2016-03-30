@@ -18,7 +18,8 @@
                :caveman2)
   :components ((:module "src"
                         :components
-                        ((:file "widget")
+                        ((:file "util")
+                         (:file "widget")
                          (:file "widgets"))))
   :description ""
   :long-description

@@ -5,9 +5,6 @@ by [[https://github.com/skypher/weblocks][Weblocks]] and introduces its widget s
 only using its widget concept it does not control the developer as
 much as Weblocks itself.
 
-If you create a widget then routes for a REST API will be added
-automatically.
-
 ** Usage
 *** General 
 The only important thing is to run the function INIT-WIDGETS with an
@@ -112,6 +109,32 @@ An example (with children):
           (make-widget :session '<session-widget>)))
   (render-widget (gethash :session-widget *session*)))
 #+END_SRC
+
+** Things that happen automatically
+*** Automatically REST API creation
+If you create a widget then routes for a REST API will be added
+automatically. Suppose you subclass <widget> with the class
+"<my-widget>", then you will get the path "/rest/my-widget" which you
+can access.
+
+#+BEGIN_SRC lisp
+(defclass <my-widget> (<widget>)
+  ())
+
+(defmethod render-widget ((this <my-widget>))
+  "my-widget representation for the website")
+
+(defmethod render-widget-rest ((this <my-widget>) (method (eql :get)) (args t))
+  "my-widget representation for the REST.")
+
+(defmethod render-widget-rest ((this <my-widget>) (method (eql :post)) (args t))
+  (render-widget this))
+#+END_SRC
+
+*** Encapsulating widgets with divs
+Each widget getsw wrapped in a div automatically. Therefore you can
+access every widget (and derived widget) very easily with CSS.
+
 ** Installation
 *** Quicklisp
 Clone this repository into "~/quicklisp/local-projects" to QUICKLOAD

@@ -6,15 +6,16 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (in-package :cl-user)
-(defpackage caveman2-widget
+(defpackage caveman2-widgets.widget
   (:use :cl
+        :caveman2-widgets.util
         :caveman2)
   (:export :<widget>
            :render-widget
            :render-widget-rest
            :init-widgets
            :make-widget))
-(in-package :caveman2-widget)
+(in-package :caveman2-widgets.widget)
 
 (defvar *rest-path* "rest")
 (defvar *rest-methods* '(:get :post :put :patch :delete :head :options))
@@ -91,15 +92,13 @@ The REST can be accessed by the URI /*rest-path*/widget-name"
   (declare (special *web*))
 
   (when (not (api-generated-p this))
-    (let* ((class-name (symbol-name (type-of this)))
-           (rest-path (string-downcase
-                       (concatenate 'string
-                                    "/"
-                                    *rest-path*
-                                    "/"
-                                    (subseq class-name
-                                            1
-                                            (- (length class-name) 1))))))
+    (let ((rest-path
+           (string-downcase
+            (concatenate 'string
+                         "/"
+                         *rest-path*
+                         "/"
+                         (get-trimmed-class-name this)))))
       (dolist (cur-method *rest-methods*)
         (setf (ningle:route *web*
                             rest-path
@@ -128,6 +127,14 @@ The REST can be accessed by the URI /*rest-path*/widget-name"
   (:documentation "@return Returns the HTML representation of the
 widget as string. It is intended to use this within a simple HTML
 transfer or embedded in another page."))
+
+(defmethod render-widget :around ((this <widget>))
+  (concatenate 'string
+               "<div class=\"widget "
+               (get-trimmed-class-name this)
+               "\">"
+               (call-next-method this)
+               "</div>"))
 
 (defgeneric render-widget-rest (this method args)
   (:documentation "

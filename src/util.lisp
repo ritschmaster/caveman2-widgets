@@ -6,13 +6,14 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (in-package :cl-user)
-(defpackage caveman2-widgets
-  (:use :cl
-        :caveman2-widgets.widget)
-  (:export :<widget>
-           :render-widget
-           :render-widget-rest
-           :init-widgets
-           :make-widget
-           :<widget-holder>))
-(in-package :caveman2-widgets)
+(defpackage caveman2-widgets.util
+  (:use :cl)
+  (:export :get-trimmed-class-name))
+(in-package :caveman2-widgets.util)
+
+(defun get-trimmed-class-name (obj)
+  (let ((class-name (symbol-name (type-of obj))))
+    (string-downcase
+     (subseq class-name
+             1
+             (- (length class-name) 1)))))
