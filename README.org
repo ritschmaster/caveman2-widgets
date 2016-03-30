@@ -1,9 +1,13 @@
-* caveman2-widgets 
+* caveman2-widgets
 ** What is it
 caveman2-widgets is an extension library to [[https://github.com/fukamachi/caveman][caveman2]]. It is influenced
 by [[https://github.com/skypher/weblocks][Weblocks]] and introduces its widget system for the developer. By
 only using its widget concept it does not control the developer as
-much as Weblocks itself.
+much as Weblocks itself. For people who don't now Weblocks' aproach:
+the developer can create web applications (more) like a normal GUI
+application by using subclassable widgets which can have callbacks and
+their like. Each Widget is only responsible for its own content but
+might interfere with other objects.
 
 ** Usage
 *** General 
@@ -80,7 +84,14 @@ tricky because all your /session/ widgets must be stored with the
 session. :SESSION is the keyword for MAKE-WIDGET to get a /session/
 widget. Of course you only need to save the top level (highest) widget
 of a widget tree in the session (the children will be saved where the
-parent is).
+parent is). A short overview of the functions:
+- SET-WIDGET-FOR-SESSION :: Saves a widget in the session
+     variable. This should be considered ONLY for session scoped
+     widgets.
+- GET-WIDGET-FOR-SESSION :: Gets a previously saved widget from the
+     session variable (e.g. to render it).
+- REMOVE-WIDGET-FOR-SESSION :: Removes a saved widget from the session
+     variable.
 
 An example (with children):
 #+BEGIN_SRC lisp
@@ -118,14 +129,12 @@ An example (with children):
 
 
 (defroute "/" ()
-  (when (null (gethash :session-widget *session*))
-    (setf (gethash :session-widget *session*)
-          (make-widget :session '<session-widget>)))
-  (render-widget (gethash :session-widget *session*)))
+  (set-widget-for-session :session-widget
+                          (make-widget :session '<session-widget>))
+  (render-widget (get-widget-for-session :session-widget)))
 
 (defroute "/reset-session" ()
-  (setf (gethash :session-widget *session*)
-        nil)
+  (remove-widget-for-session :session-widget)
   "reset your session")
 #+END_SRC
 

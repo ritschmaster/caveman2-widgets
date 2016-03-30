@@ -8,13 +8,18 @@
 (in-package :cl-user)
 (defpackage caveman2-widgets.widget
   (:use :cl
-        :caveman2-widgets.util
-        :caveman2)
+        :caveman2
+        :caveman2-widgets.util)
   (:export :<widget>
            :render-widget
            :render-widget-rest
            :init-widgets
-           :make-widget))
+           :make-widget
+           :set-widget-for-session
+           :get-widget-for-session
+           :remove-widget-for-session
+           :id
+           :*web*))
 (in-package :caveman2-widgets.widget)
 
 (defvar *rest-path* "rest")
@@ -45,7 +50,7 @@ the given widget.")))
 (defclass <widget> ()
   ((id
     :initform (symbol-name (gensym))
-    :accessor id)
+    :reader id)
 
    (api-generated-p
     :initform (make-hash-table)
@@ -54,14 +59,7 @@ the given widget.")))
     :documentation "
 To know if the REST API has been generated yet. This is a hash-table which
 stores a boolean for each derived class. E.g. to check if the API for <widget>
-has been created you can call (gethash '<widget> (api-generated-p this))")
-   (widget-holder
-    :initform nil ;(error "Must supply a widget-holder!")
-    :initarg :widget-holder
-    :reader widget-holder
-    :documentation "A widget holder object which stores all
-widgets. The widget-holder will be searched for a widget if the REST
-needs one."))
+has been created you can call (gethash '<widget> (api-generated-p this))"))
   (:documentation ""))
 
 (defmethod append-widget ((this <widget-holder>) (widget <widget>))
@@ -158,6 +156,11 @@ can do the following:
 (defmethod render-widget-rest ((this <widget>) (method (eql :get)))
   \"HTML output for the REST when GET.\")"))
 
+(defgeneric mark-dirty (this))
+
+(defmethod mark-dirty ((this <widget>))
+  )
+
 
 (defvar *global-widget-holder*
   (make-instance '<widget-holder>))
@@ -168,10 +171,6 @@ can do the following:
 (defmethod make-widget ((scope (eql :global)) (class symbol))
   (let ((ret-val (make-instance class)))
     (append-widget *global-widget-holder* ret-val)
-    ;; (trivial-garbage:finalize
-    ;;  ret-val
-    ;;  (lambda ()
-    ;;    (remove-widget *global-widget-holder* ret-val)))
     ret-val))
 
 (defmethod make-widget ((scope (eql :session)) (class symbol))
@@ -182,8 +181,23 @@ can do the following:
       (setf (gethash :widget-holder *session*)
             holder))
     (append-widget holder ret-val)
-    ;; (trivial-garbage:finalize
-    ;;  ret-val
-    ;;  (lambda ()
-    ;;    (remove-widget holder ret-val)))
     ret-val))
+
+(defun set-widget-for-session (session-tag widget &optional (session *session*))
+  (declare (keyword session-tag)
+           (<widget> widget)
+           (hash-table session))
+  (print "hello asdfasdf")
+  (when (null (gethash session-tag session))
+    (setf (gethash session-tag session)
+          widget)))
+
+(defun get-widget-for-session (session-tag  &optional (session *session*))
+  (declare (keyword session-tag)
+           (hash-table session))
+  (gethash session-tag session))
+
+(defun remove-widget-for-session (session-tag  &optional (session *session*))
+  (declare (keyword session-tag)
+           (hash-table session))
+  (setf (gethash session-tag session) nil))

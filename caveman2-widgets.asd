@@ -20,6 +20,7 @@
                         :components
                         ((:file "util")
                          (:file "widget")
+                         (:file "button")
                          (:file "widgets"))))
   :description ""
   :long-description
