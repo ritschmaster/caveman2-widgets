@@ -89,11 +89,11 @@ An example (with children):
 
 (defmethod render-widget ((this <display-id-widget>))
   (concatenate 'string
-               "<h1>The id of your widget</h1>"
-               "<h2>It should be different for each session</h2>"
-               "<p>My id: "
-               (caveman2-widget::id this)
-               "</p>"))
+               "<h3>display-id-widget id: <a href=\"/rest/display-id-widget?id="
+               (caveman2-widgets.widget::id this)
+               "\">"
+               (caveman2-widgets.widget::id this)
+               "</a></h3>"))
 
 (defclass <session-widget> (<widget>)
   ((id-widget
@@ -101,13 +101,32 @@ An example (with children):
     :reader id-widget)))
 
 (defmethod render-widget ((this <session-widget>))
-  (render-widget (id-widget this)))
+  (concatenate 'string
+               "<h1>The id of your widget</h1>"
+               "<h2>It should be different for each session</h2>"
+               "<p>My id: <a href=\"/rest/session-widget?id="
+               (caveman2-widgets.widget::id this)
+               "\">"
+               (caveman2-widgets.widget::id this)
+               "</a></p>"
+               (render-widget (id-widget this))))
+
+(defmethod render-widget-rest ((this <session-widget>)
+                               (method (eql :get))
+                               (args t))
+  (render-widget this))
+
 
 (defroute "/" ()
   (when (null (gethash :session-widget *session*))
     (setf (gethash :session-widget *session*)
           (make-widget :session '<session-widget>)))
   (render-widget (gethash :session-widget *session*)))
+
+(defroute "/reset-session" ()
+  (setf (gethash :session-widget *session*)
+        nil)
+  "reset your session")
 #+END_SRC
 
 ** Things that happen automatically

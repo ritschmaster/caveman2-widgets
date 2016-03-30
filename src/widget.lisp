@@ -25,7 +25,6 @@
 (defclass <widget-holder> ()
   ((widgets
     :initform '()
-    :allocation :class
     :documentation "
 
 Holds all widgets and derived widgets of a specific session. If a
@@ -49,12 +48,15 @@ the given widget.")))
     :accessor id)
 
    (api-generated-p
-    :initform nil
+    :initform (make-hash-table)
     :accessor api-generated-p
     :allocation :class
-    :documentation "To know if the REST API has been generated yet.")
+    :documentation "
+To know if the REST API has been generated yet. This is a hash-table which
+stores a boolean for each derived class. E.g. to check if the API for <widget>
+has been created you can call (gethash '<widget> (api-generated-p this))")
    (widget-holder
-    :initform (error "Must supply a widget-holder!")
+    :initform nil ;(error "Must supply a widget-holder!")
     :initarg :widget-holder
     :reader widget-holder
     :documentation "A widget holder object which stores all
@@ -66,23 +68,30 @@ needs one."))
   (setf
    (slot-value this 'widgets)
    (append (slot-value this 'widgets)
-           (list widget))))
+           (list
+            (trivial-garbage:make-weak-pointer widget)))))
 
 (defmethod remove-widget ((this <widget-holder>) (widget <widget>))
   (setf (slot-value this 'widgets)
         (remove-if #'(lambda (item)
-                       (string= (slot-value item 'id)
+                       (string= (slot-value (trivial-garbage:weak-pointer-value item)
+                                            'id)
                                 (slot-value widget 'id)))
                    (slot-value this 'widgets))))
 
 
 
-(defmethod find-widget ((class <widget-holder>) (to-find string))
-  (find-if  #'(lambda (item)
-                (declare (<widget> item))
-                (string= (id item)
-                         to-find))
-            (slot-value this 'widgets)))
+(defmethod find-widget ((this <widget-holder>) (to-find string))
+  (trivial-garbage:gc :full t)
+  (setf (slot-value this 'widgets)
+        (clean-list-of-broken-links (slot-value this 'widgets)))
+  (let ((ret-val (find-if  #'(lambda (item)
+                               (string= (id (trivial-garbage:weak-pointer-value item))
+                                        to-find))
+                           (slot-value this 'widgets))))
+    (if ret-val
+        (trivial-garbage:weak-pointer-value ret-val)
+        nil)))
 
 (defmethod initialize-instance :after ((this <widget>) &key)
   "
@@ -91,7 +100,7 @@ accessable URIs for the HTTP methods stored in *rest-methods*.
 The REST can be accessed by the URI /*rest-path*/widget-name"
   (declare (special *web*))
 
-  (when (not (api-generated-p this))
+  (when (not (gethash (type-of this) (api-generated-p this)))
     (let ((rest-path
            (string-downcase
             (concatenate 'string
@@ -99,29 +108,33 @@ The REST can be accessed by the URI /*rest-path*/widget-name"
                          *rest-path*
                          "/"
                          (get-trimmed-class-name this)))))
+
       (dolist (cur-method *rest-methods*)
         (setf (ningle:route *web*
                             rest-path
                             :method cur-method)
               #'(lambda (params)
-                  (let ((found-widget
-                         (find-widget (widget-holder this)
-                                      (cdr
-                                       (assoc "id"
-                                              params
-                                              :test #'string=)))))
+                  (let* ((session-widget-holder
+                          (gethash :widget-holder *session*))
+                         (requested-id (cdr
+                                        (assoc "id"
+                                               params
+                                               :test #'string=)))
+                         (found-widget
+                          (or
+                           (find-widget *global-widget-holder*
+                                        requested-id)
+                           (if session-widget-holder
+                               (find-widget session-widget-holder
+                                            requested-id)
+                               nil))))
                     (if found-widget
                         (render-widget-rest
                          found-widget
                          cur-method
                          params)
-                        "404 Not found"))))))
-    (setf (api-generated-p this) t))
-  (describe this)
-  (append-widget (widget-holder this) this)
-  (trivial-garbage:finalize
-   this
-   (remove-widget (widget-holder this) this)))
+                        (throw-code 404)))))))
+    (setf (gethash (type-of this) (api-generated-p this)) t)))
 
 (defgeneric render-widget (this)
   (:documentation "@return Returns the HTML representation of the
@@ -153,14 +166,24 @@ can do the following:
   (:documentation ""))
 
 (defmethod make-widget ((scope (eql :global)) (class symbol))
-  (make-instance class
-                 :widget-holder *global-widget-holder*))
+  (let ((ret-val (make-instance class)))
+    (append-widget *global-widget-holder* ret-val)
+    ;; (trivial-garbage:finalize
+    ;;  ret-val
+    ;;  (lambda ()
+    ;;    (remove-widget *global-widget-holder* ret-val)))
+    ret-val))
 
 (defmethod make-widget ((scope (eql :session)) (class symbol))
-  (let ((holder (gethash :widget-holder *session*)))
+  (let ((holder (gethash :widget-holder *session*))
+        (ret-val (make-instance class)))
     (when (null holder)
       (setf holder (make-instance '<widget-holder>))
       (setf (gethash :widget-holder *session*)
             holder))
-    (make-instance class
-                   :widget-holder holder)))
+    (append-widget holder ret-val)
+    ;; (trivial-garbage:finalize
+    ;;  ret-val
+    ;;  (lambda ()
+    ;;    (remove-widget holder ret-val)))
+    ret-val))
