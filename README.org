@@ -131,7 +131,14 @@ An example (with children):
 (defroute "/" ()
   (set-widget-for-session :session-widget
                           (make-widget :session '<session-widget>))
-  (render-widget (get-widget-for-session :session-widget)))
+  (concatenate 'string
+             (render-widget
+              (get-widget-for-session :session-widget))
+             (render-widget
+              (make-button :global
+                           "Reset session"
+                           #'(lambda ()
+                               (remove-widget-for-session :session-widget))))))
 
 (defroute "/reset-session" ()
   (remove-widget-for-session :session-widget)

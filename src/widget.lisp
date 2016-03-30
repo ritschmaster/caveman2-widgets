@@ -19,6 +19,7 @@
            :get-widget-for-session
            :remove-widget-for-session
            :id
+           :*rest-path*
            :*web*))
 (in-package :caveman2-widgets.widget)
 
@@ -114,10 +115,9 @@ The REST can be accessed by the URI /*rest-path*/widget-name"
               #'(lambda (params)
                   (let* ((session-widget-holder
                           (gethash :widget-holder *session*))
-                         (requested-id (cdr
-                                        (assoc "id"
-                                               params
-                                               :test #'string=)))
+                         (requested-id (get-value-for-ningle-request-parameter
+                                        params
+                                        "id"))
                          (found-widget
                           (or
                            (find-widget *global-widget-holder*
@@ -156,12 +156,6 @@ can do the following:
 (defmethod render-widget-rest ((this <widget>) (method (eql :get)))
   \"HTML output for the REST when GET.\")"))
 
-(defgeneric mark-dirty (this))
-
-(defmethod mark-dirty ((this <widget>))
-  )
-
-
 (defvar *global-widget-holder*
   (make-instance '<widget-holder>))
 
@@ -187,7 +181,6 @@ can do the following:
   (declare (keyword session-tag)
            (<widget> widget)
            (hash-table session))
-  (print "hello asdfasdf")
   (when (null (gethash session-tag session))
     (setf (gethash session-tag session)
           widget)))

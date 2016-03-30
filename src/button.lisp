@@ -9,40 +9,58 @@
 (defpackage caveman2-widgets.button
   (:use :cl
         :caveman2
+        :caveman2-widgets.util
         :caveman2-widgets.widget)
   (:export :<button-widget>
            :make-button
-           :label))
+           :label
+           :*button-call-path*))
 (in-package :caveman2-widgets.button)
+
+(defvar *button-call-path* "buttons")
+(defvar *input-field-for-old-uri* "oldUri")
 
 (defclass <button-widget> (<widget>)
   ((label
     :initform nil
-    :reader label)
-   (callback
-    :initform nil
-    :documentation "The callback function for the button. The return-value of the function
-will be the response text."))
-  (:documentation ""))
+    :reader label))
+  (:documentation "This "))
 
 (defmethod render-widget ((this <button-widget>))
   (concatenate 'string
-               "<form id=\"" (id this) "\" method=\"post\">"
+               "<form method=\"post\" action=\"/"
+               *button-call-path*
+               "/"
+               ;; (get-trimmed-class-name this) "?id="
+               (id this)
+               "\">"
                "<input type=\"submit\" value=\"" (label this) "\" />"
-               "<input type=\"hidden\" value=\"" (getf (request-env *request*) :request-uri) "\" />"
+               "<input type=\"hidden\" name=\"" *input-field-for-old-uri* "\" value=\""
+               (getf (request-env *request*) :request-uri) "\" />"
                "</form>"))
-
-(defmethod render-widget-rest ((this <button-widget>)
-                               (method (eql :post))
-                               (args t))
-  (print args)
-  (funcall (slot-value this 'callback) this))
 
 
 (defun make-button (scope label callback)
+  "@param callback The callback function for the button. This function
+   will be called when the user presses the button."
   (declare (keyword scope)
            (string label)
            (function callback))
   (let ((ret-val (make-widget scope '<button-widget>)))
     (setf (slot-value ret-val 'label) label)
-    (setf (slot-value ret-val 'callback) callback)))
+    ;; (setf (slot-value ret-val 'callback) callback)
+    (setf (ningle:route *web*
+                        (concatenate 'string
+                                     "/"
+                                     *button-call-path*
+                                     "/"
+                                     (id ret-val))
+                        :method :post)
+          #'(lambda (params)
+              (funcall callback)
+              (let ((oldUrl (get-value-for-ningle-request-parameter
+                             params
+                             *input-field-for-old-uri*)))
+                (when oldUrl
+                  (redirect oldUrl)))))
+    ret-val))

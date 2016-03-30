@@ -21,6 +21,8 @@
    :get-widget-for-session
    :remove-widget-for-session
    :<widget-holder>
+   :*rest-path*
+   :*button-call-path*
 
    ;; from caveman2-widgets.button
    :<button-widget>

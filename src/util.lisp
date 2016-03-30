@@ -9,7 +9,8 @@
 (defpackage caveman2-widgets.util
   (:use :cl)
   (:export :get-trimmed-class-name
-           :clean-list-of-broken-links))
+           :clean-list-of-broken-links
+           :get-value-for-ningle-request-parameter))
 (in-package :caveman2-widgets.util)
 
 (defun get-trimmed-class-name (obj)
@@ -24,3 +25,10 @@
   (remove-if #'(lambda (item)
                  (null (trivial-garbage:weak-pointer-value item)))
              some-list))
+
+(defun get-value-for-ningle-request-parameter (params key)
+  (declare (string key))
+  (cdr
+   (assoc key
+          params
+          :test #'string=)))
