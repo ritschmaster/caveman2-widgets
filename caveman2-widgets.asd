@@ -21,7 +21,7 @@
                         ((:file "util")
                          (:file "widget")
                          (:file "callback-widget")
-                         (:file "link")
+                         (:file "document")
                          (:file "widgets"))))
   :description ""
   :long-description

@@ -50,8 +50,8 @@ keyword (e.g. :post or :get")))
     (let* ((session-widget-holder
             (gethash :widget-holder session))
            (sessioned-widget (if session-widget-holder
-                                 (find-widget session-widget-holder
-                                              widget-id)
+                                 (find-item session-widget-holder
+                                            widget-id)
                                  nil)))
       (when (null sessioned-widget)
         (throw-code 404)))))
@@ -75,7 +75,7 @@ will be called when the route is accessed.
                       :method (http-method widget))
         callback))
 
-(defvar *button-call-path* "buttons")
+(defvar *button-call-path* nil)
 (defvar *input-field-for-old-uri* "oldUri")
 
 (defclass <button-widget> (<callback-widget>)
@@ -118,7 +118,7 @@ will be called when the route is accessed.
                                   (redirect oldUrl)))))
     ret-val))
 
-(defvar *link-call-path* "links")
+(defvar *link-call-path* nil)
 
 (defclass <link-widget> (<callback-widget>)
   ()
@@ -155,5 +155,4 @@ will be called when the route is accessed.
                           #'(lambda (params)
                               (test-widget-if-session scope (id ret-val))
                               (redirect (funcall callback))))
-    ret-val))
-
+    ret-val)) 

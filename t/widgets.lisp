@@ -12,10 +12,7 @@
         :prove))
 (in-package :caveman2-widgets-test)
 
-;; NOTE: To run this test file, execute `(asdf:test-system :caveman2-widgets)' in your Lisp.
+(plan 0)
 
-(plan nil)
-
-;; blah blah blah.
-
+(setf prove:*default-reporter* :fiveAM)
 (finalize)

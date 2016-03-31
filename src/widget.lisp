@@ -11,27 +11,36 @@
         :caveman2
         :caveman2-widgets.util)
   (:export
-   :init-widgets
    :<widget>
    :render-widget
    :render-widget-rest
    :make-widget
    :id
 
-   :find-widget
+   :find-item
 
    :set-widget-for-session
    :get-widget-for-session
    :remove-widget-for-session
 
    :*rest-path*
-   :*web*))
+   :*web*
+   :*javascript-route*
+   :*css-route*))
 (in-package :caveman2-widgets.widget)
 
 (defvar *rest-path* "rest")
 (defvar *rest-methods* '(:get :post :put :patch :delete :head :options))
 (defvar *web* nil
   "An <app>-instance")
+
+(defvar *javascript-path*
+  nil
+  "An absolute path where caveman2-widgets' JavaScript files can be accessed.")
+(defvar *css-path*
+  nil
+  "An absolute route where caveman2-widgets' CSS files can be accessed.")
+
 
 (defclass <widget-holder> ()
   ((widgets
@@ -42,16 +51,6 @@ Holds all widgets and derived widgets of a specific session. If a
 widget is finalized it will be removed from this list
 automatically. This list is neccessary for the REST API to get exactly
 the given widget.")))
-
-(defgeneric append-widget (this widget))
-
-(defgeneric remove-widget (this widget))
-
-(defgeneric find-widget (this to-find))
-
-(defun init-widgets (webapp)
-  (declare (<app> webapp))
-  (setf *web* webapp))
 
 (defclass <widget> ()
   ((id
@@ -68,24 +67,24 @@ stores a boolean for each derived class. E.g. to check if the API for <widget>
 has been created you can call (gethash '<widget> (api-generated-p this))"))
   (:documentation ""))
 
-(defmethod append-widget ((this <widget-holder>) (widget <widget>))
+(defmethod append-item ((this <widget-holder>) (item <widget>))
   (setf
    (slot-value this 'widgets)
    (append (slot-value this 'widgets)
            (list
-            (trivial-garbage:make-weak-pointer widget)))))
+            (trivial-garbage:make-weak-pointer item)))))
 
-(defmethod remove-widget ((this <widget-holder>) (widget <widget>))
+(defmethod delete-item ((this <widget-holder>) (item <widget>))
   (setf (slot-value this 'widgets)
         (remove-if #'(lambda (item)
                        (string= (slot-value (trivial-garbage:weak-pointer-value item)
                                             'id)
-                                (slot-value widget 'id)))
+                                (slot-value item 'id)))
                    (slot-value this 'widgets))))
 
 
 
-(defmethod find-widget ((this <widget-holder>) (to-find string))
+(defmethod find-item ((this <widget-holder>) (to-find string))
   (trivial-garbage:gc :full t)
   (setf (slot-value this 'widgets)
         (clean-list-of-broken-links (slot-value this 'widgets)))
@@ -125,11 +124,11 @@ The REST can be accessed by the URI /*rest-path*/widget-name"
                                         "id"))
                          (found-widget
                           (or
-                           (find-widget *global-widget-holder*
-                                        requested-id)
+                           (find-item *global-widget-holder*
+                                      requested-id)
                            (if session-widget-holder
-                               (find-widget session-widget-holder
-                                            requested-id)
+                               (find-item session-widget-holder
+                                          requested-id)
                                nil))))
                     (if found-widget
                         (render-widget-rest
@@ -169,7 +168,7 @@ can do the following:
 
 (defmethod make-widget ((scope (eql :global)) (class symbol))
   (let ((ret-val (make-instance class)))
-    (append-widget *global-widget-holder* ret-val)
+    (append-item *global-widget-holder* ret-val)
     ret-val))
 
 (defmethod make-widget ((scope (eql :session)) (class symbol))
@@ -179,7 +178,7 @@ can do the following:
       (setf holder (make-instance '<widget-holder>))
       (setf (gethash :widget-holder *session*)
             holder))
-    (append-widget holder ret-val)
+    (append-item holder ret-val)
     ret-val))
 
 (defun set-widget-for-session (session-tag widget &optional (session *session*))

@@ -176,6 +176,39 @@ An example:
 You can create your own callback widgets too. Just look at the
 <CALLBACK-WIDGET>, <BUTTON-WIDGET> classes and the function
 MAKE-BUTTON for that.
+
+*** Use caveman2-widgets for your entire HTML document
+To make your life really easy you can create an entire HTML document.
+
+#+BEGIN_SRC lisp
+(defclass <root-widget> (<body-widget>)
+  ())
+
+(defmethod render-widget ((this <root-widget>))
+  "Hello world!")
+
+(defclass <otherpage-widget> (<body-widget>)
+  ())
+
+(defmethod render-widget ((this <otherpage-widget>))
+  "Hello from the other page!")
+
+(defvar *root-widget* (make-widget :global '<root-widget>))
+(defvar *otherpage-widget* (make-widget :global '<otherpage-widget>))
+
+(defroute "/" ()
+  ;; The *root-widget* can be accessed under:
+  ;; /rest/root-widget?id=(caveman2-widgets.widget::id *root-widget*)
+  (render-widget
+   (make-instance '<html-document-widget>
+                  :body *root-widget*)))
+(defroute "/otherpage" ()
+  (render-widget
+   (make-instance '<html-document-widget>
+                  :body *otherpage-widget*)))
+
+#+END_SRC
+
 ** Things that happen automatically
 *** Automatically REST API creation
 If you create a widget then routes for a REST API will be added
@@ -200,6 +233,13 @@ can access.
 *** Encapsulating widgets with divs
 Each widget gets wrapped in a div automatically. Therefore you can
 access every widget (and derived widget) very easily with CSS.
+
+*** jQuery added as JavaScript dependency
+When <HTML-DOCUMENT-WIDGET> is used jQuery is added automatically in
+your HTML header. Please notice that jQuery is needed to work with
+caveman2-widgets. *If you don't want to use the <HMTL-DOCUMENT-WIDGET>
+please make sure that jQuery is added - specifically "$" is reachable
+in the JS-environment.*
 
 ** Installation
 *** Quicklisp
