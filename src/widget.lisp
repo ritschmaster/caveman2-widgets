@@ -1,5 +1,5 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; This file is a part of caveman2-widgets project.
+;; This file is a part of the caveman2-widgets project.
 ;;
 ;; Copyright (c) 2016 Richard Paul Bäck (richard.baeck@free-your-pc.com)
 ;; LICENSE: LLGPLv3
@@ -178,6 +178,8 @@ can do the following:
     ret-val))
 
 (defun set-widget-for-session (session-tag widget &optional (session *session*))
+  "Saves a widget in the session variable. This should be considered ONLY for
+session scoped widgets."
   (declare (keyword session-tag)
            (<widget> widget)
            (hash-table session))
@@ -186,11 +188,14 @@ can do the following:
           widget)))
 
 (defun get-widget-for-session (session-tag  &optional (session *session*))
+  "Gets a previously saved widget from the session variable (e.g. to render
+it)."
   (declare (keyword session-tag)
            (hash-table session))
   (gethash session-tag session))
 
 (defun remove-widget-for-session (session-tag  &optional (session *session*))
+  "Removes a saved widget from the session variable."
   (declare (keyword session-tag)
            (hash-table session))
   (setf (gethash session-tag session) nil))

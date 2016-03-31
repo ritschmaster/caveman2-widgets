@@ -7,7 +7,12 @@ much as Weblocks itself. For people who don't now Weblocks' aproach:
 the developer can create web applications (more) like a normal GUI
 application by using subclassable widgets which can have callbacks and
 their like. Each Widget is only responsible for its own content but
-might interfere with other objects.
+might interfere with other objects. But the really cool part is that
+the framework automatically creates your site for dynamically
+(JavaScript based) access *and* normal access. For the dynamic
+approach this means that you don't have to manage or even care to
+refresh parts of your website, because widgets can do that
+by themselves!
 
 ** Usage
 *** General 
@@ -145,6 +150,28 @@ An example (with children):
   "reset your session")
 #+END_SRC
 
+*** Buttons and links
+You can use buttons and links that call specific functions.
+
+An example:
+#+BEGIN_SRC lisp
+(defroute "/" ()
+  (concatenate 'string
+               (render-widget
+                (make-link :global
+                           "Github"
+                           #'(lambda ()
+                               (format t "LOG: Link clicked!")
+                               "http://github.com/ritschmaster")))
+               (render-widget
+                (make-button :global
+                             "Reset session"
+                             #'(lambda ()
+                                 (format t "LOG: Button clicked!"))))))
+#+END_SRC
+
+You can create your own callback widgets too. Just look at the
+<CALLBACK-WIDGET> and <BUTTON-WIDGET> classes for that.
 ** Things that happen automatically
 *** Automatically REST API creation
 If you create a widget then routes for a REST API will be added
@@ -167,7 +194,7 @@ can access.
 #+END_SRC
 
 *** Encapsulating widgets with divs
-Each widget getsw wrapped in a div automatically. Therefore you can
+Each widget gets wrapped in a div automatically. Therefore you can
 access every widget (and derived widget) very easily with CSS.
 
 ** Installation

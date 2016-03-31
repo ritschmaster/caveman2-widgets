@@ -1,5 +1,5 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; This file is a part of caveman2-widgets project.
+;; This file is a part of the caveman2-widgets project.
 ;;
 ;; Copyright (c) 2016 Richard Paul Bäck (richard.baeck@free-your-pc.com)
 ;; LICENSE: LLGPLv3
@@ -20,7 +20,8 @@
                         :components
                         ((:file "util")
                          (:file "widget")
-                         (:file "button")
+                         (:file "callback-widget")
+                         (:file "link")
                          (:file "widgets"))))
   :description ""
   :long-description
