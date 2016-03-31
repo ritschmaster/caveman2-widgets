@@ -10,17 +10,22 @@
   (:use :cl
         :caveman2
         :caveman2-widgets.util)
-  (:export :<widget>
-           :render-widget
-           :render-widget-rest
-           :init-widgets
-           :make-widget
-           :set-widget-for-session
-           :get-widget-for-session
-           :remove-widget-for-session
-           :id
-           :*rest-path*
-           :*web*))
+  (:export
+   :init-widgets
+   :<widget>
+   :render-widget
+   :render-widget-rest
+   :make-widget
+   :id
+
+   :find-widget
+
+   :set-widget-for-session
+   :get-widget-for-session
+   :remove-widget-for-session
+
+   :*rest-path*
+   :*web*))
 (in-package :caveman2-widgets.widget)
 
 (defvar *rest-path* "rest")

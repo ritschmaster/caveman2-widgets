@@ -43,6 +43,19 @@
     :documentation "This slot should be one of the HTTP methods as
 keyword (e.g. :post or :get")))
 
+(defun test-widget-if-session (scope widget-id &optional (session *session*))
+  (declare (keyword scope)
+           (string widget-id))
+  (when (eql scope :session)
+    (let* ((session-widget-holder
+            (gethash :widget-holder session))
+           (sessioned-widget (if session-widget-holder
+                                 (find-widget session-widget-holder
+                                              widget-id)
+                                 nil)))
+      (when (null sessioned-widget)
+        (throw-code 404)))))
+
 ;; (defmethod initialize-instance :around ((this <callback-widget>) &key)
 ;;   (store-callback-for-widget (callback this)
 ;;                              (uri-path this)))
@@ -96,6 +109,7 @@ will be called when the route is accessed.
     (init-callback-widget ret-val
                           label
                           #'(lambda (params)
+                              (test-widget-if-session scope (id ret-val))
                               (funcall callback)
                               (let ((oldUrl (get-value-for-ningle-request-parameter
                                              params
@@ -139,6 +153,7 @@ will be called when the route is accessed.
     (init-callback-widget ret-val
                           label
                           #'(lambda (params)
+                              (test-widget-if-session scope (id ret-val))
                               (redirect (funcall callback))))
     ret-val))
 

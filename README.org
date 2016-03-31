@@ -151,7 +151,10 @@ An example (with children):
 #+END_SRC
 
 *** Buttons and links
-You can use buttons and links that call specific functions.
+You can use buttons and links that call specific functions. When you
+create a button/link only for a session the created route will be
+guarded. Therefore only the user with the associated route may
+actually access his button.
 
 An example:
 #+BEGIN_SRC lisp
@@ -171,7 +174,8 @@ An example:
 #+END_SRC
 
 You can create your own callback widgets too. Just look at the
-<CALLBACK-WIDGET> and <BUTTON-WIDGET> classes for that.
+<CALLBACK-WIDGET>, <BUTTON-WIDGET> classes and the function
+MAKE-BUTTON for that.
 ** Things that happen automatically
 *** Automatically REST API creation
 If you create a widget then routes for a REST API will be added
