@@ -13,12 +13,12 @@
   "")
 
 (defparameter *js-file-expected-output*
-  "<script src=\"/test.js\" type=\"text/javascript\">")
+  "<script src=\"/test.js\" type=\"text/javascript\"></script>")
 (defvar *js-file* (make-instance '<js-file>
                                  :path "/test.js"))
 
 (defparameter *css-file-expected-output*
-  "<link rel=\"stylesheet\" href=\"/test.css\">")
+  "<link rel=\"stylesheet\" href=\"/test.css\"></link>")
 (defvar *css-file*
   (make-instance '<css-file>
                  :path "/test.css"))
@@ -27,10 +27,15 @@
   (concatenate 'string
                "<head>"
                *css-file-expected-output*
+               "<script src=\"https://code.jquery.com/jquery-2.2.2.min.js\" type=\"text/javascript\"></script>"
+               "<script src=\"/widgets/js/widgets.js\" type=\"text/javascript\"></script>"
                *js-file-expected-output*
+               "<meta charset=\"utf-8\">"
+               "<title>Testpage</title>"
                "</head>"))
 (defvar *header-widget*
-  (let ((header (make-instance 'caveman2-widgets.document::<header-widget>)))
+  (let ((header (make-instance '<header-widget>
+                               :title "Testpage")))
     (append-item header *js-file*)
     (append-item header *css-file*)
     header))
@@ -38,29 +43,24 @@
 (defparameter *body-expected-output*
   "<div class=\"widget body-widget\"></div>")
 (defvar *body-widget*
-  (let ((body (make-instance '<body-widget>))
-        ;; (js-file (make-instance '<js-file>
-        ;;                         :path "/test.js"))
-        ;; (css-file (make-instance '<css-file>
-        ;;                          :path "/test.css"))
-        )
-    ;; (append-item header-widget js-file)
-    ;; (append-item header-widget css-file)
+  (let ((body (make-instance '<body-widget>)))
     body))
 
 (defvar *document-expected-output*
   (concatenate 'string
                "<html>"
+
                *header-expected-output*
+
                "<body><div id=\"body\">"
                *body-expected-output*
                "</div></body>"
+
                "</html>"))
 (defvar *document-widget*
   (let ((document (make-instance '<html-document-widget>
+                                 :header *header-widget*
                                  :body *body-widget*)))
-    (append-item document *js-file*)
-    (append-item document *css-file*)
     document))
 
 (plan 5)

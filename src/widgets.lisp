@@ -8,6 +8,7 @@
 (in-package :cl-user)
 (defpackage caveman2-widgets
   (:use :cl
+        :caveman2
         :caveman2-widgets.util
         :caveman2-widgets.widget
         :caveman2-widgets.callback-widget
@@ -45,8 +46,11 @@
    :make-link
 
    ;; from caveman2-widgets.document
+   :*jquery-cdn-link*
+
    :<js-file>
    :<css-file>
+   :<header-widget>
 
    :<body-widget>
 
@@ -54,11 +58,11 @@
 (in-package :caveman2-widgets)
 
 (defun init-widgets (webapp &key
-                              (javascript-path "/widgets/js")
-                              (css-path "/widgets/css")
-                              (rest-path "rest")
-                              (button-call-path "buttons")
-                              (link-call-path "links"))
+                              (javascript-path *javascript-path*)
+                              (css-path *css-path*)
+                              (rest-path *rest-path*)
+                              (button-call-path *button-call-path*)
+                              (link-call-path *link-call-path*))
   (declare (<app> webapp)
            (string javascript-path)
            (string css-path)
@@ -75,9 +79,10 @@
   (defroute-static
       (concatenate 'string
                    *javascript-path*
-                   "/widgets.js")
+                   *widgets-js-filename*)
       (merge-pathnames #P"widgets.js" *js-directory*)
-    *web*)
+    *web*
+    "text/javascript; charset=utf-8")
   ;; (defroute-static
   ;;     (concatenate 'string
   ;;                  *css-path*

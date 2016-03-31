@@ -137,6 +137,11 @@ An example (with children):
   (set-widget-for-session :session-widget
                           (make-widget :session '<session-widget>))
   (concatenate 'string
+               "<head>
+<script src=\"https://code.jquery.com/jquery-2.2.2.min.js\" type=\"text/javascript\"></script>
+<script src=\"/widgets/js/widgets.js\" type=\"text/javascript\"></script>
+</head>"
+
              (render-widget
               (get-widget-for-session :session-widget))
              (render-widget
@@ -193,6 +198,8 @@ To make your life really easy you can create an entire HTML document.
 (defmethod render-widget ((this <otherpage-widget>))
   "Hello from the other page!")
 
+(defvar *header-widget* (make-instance '<header-widget>
+                                       :title "Widgets test"))
 (defvar *root-widget* (make-widget :global '<root-widget>))
 (defvar *otherpage-widget* (make-widget :global '<otherpage-widget>))
 
@@ -201,10 +208,12 @@ To make your life really easy you can create an entire HTML document.
   ;; /rest/root-widget?id=(caveman2-widgets.widget::id *root-widget*)
   (render-widget
    (make-instance '<html-document-widget>
+                  :header *header-widget*
                   :body *root-widget*)))
 (defroute "/otherpage" ()
   (render-widget
    (make-instance '<html-document-widget>
+                  :header *header-widget*
                   :body *otherpage-widget*)))
 
 #+END_SRC
@@ -234,12 +243,24 @@ can access.
 Each widget gets wrapped in a div automatically. Therefore you can
 access every widget (and derived widget) very easily with CSS.
 
-*** jQuery added as JavaScript dependency
-When <HTML-DOCUMENT-WIDGET> is used jQuery is added automatically in
-your HTML header. Please notice that jQuery is needed to work with
-caveman2-widgets. *If you don't want to use the <HMTL-DOCUMENT-WIDGET>
-please make sure that jQuery is added - specifically "$" is reachable
-in the JS-environment.*
+*** JavaScript dependencies
+When <HEADER-WIDGET> is used all JavaScript dependencies are added
+automatically. Please notice that these dependecies are needed to
+ensure that the widgets work properly. If you don't want to use
+<HEADER-WIDGET> you have to add jQuery and all the JavaScript Code
+supplied by this caveman2-widgets.
+
+The routes for the JavaScript files (which have to be included in each
+HTML file) are:
+- /widgets/js/widgets.js
+
+The jQuery-Version used is 2.2.2 minified. If you want another jQuery
+file you can specify it with the variable *jquery-cdn-link* (should be
+an URL).
+
+*If you forget to use the JavaScript-files widgets might not work or
+even break. Most likely all dynamic content just won't work
+(automatically fallback to non-JS)*
 
 ** Installation
 *** Quicklisp

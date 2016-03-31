@@ -50,21 +50,29 @@
           params
           :test #'string=)))
 
-(defun defroute-static (uri-path path app)
+(defun defroute-static (uri-path path app content-type)
+  (declare (string uri-path)
+           (pathname path)
+           (string content-type))
   (setf (ningle:route app
                       uri-path
-                      :method :/get)
+                      :method :get)
         #'(lambda (params)
             (declare (ignore params))
+
+            (setf (getf (response-headers *response*) :content-type)
+                  content-type)
+
             (let ((ret-val ""))
               (with-open-file (input path :direction :input)
                 (loop
                    for line = (read-line input nil 'eof)
                    until (eq line 'eof) do
+                     (print line)
                      (setf ret-val
-                           (concatenate 'string
-                                        ret-val
-                                        line))))
+                           (format nil "~a~%~a"
+                                   ret-val
+                                   line))))
               ret-val))))
 
 (defgeneric append-item (this item))

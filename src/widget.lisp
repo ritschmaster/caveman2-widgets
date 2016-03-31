@@ -25,7 +25,9 @@
 
    :*rest-path*
    :*web*
-   :*javascript-route*
+   :*javascript-path*
+   :*widgets-js-filename*
+   :*css-path*
    :*css-route*))
 (in-package :caveman2-widgets.widget)
 
@@ -35,11 +37,15 @@
   "An <app>-instance")
 
 (defvar *javascript-path*
-  nil
+  "/widgets/js"
   "An absolute path where caveman2-widgets' JavaScript files can be accessed.")
 (defvar *css-path*
-  nil
+  "/widgets/css"
   "An absolute route where caveman2-widgets' CSS files can be accessed.")
+
+(defvar *widgets-js-filename* "/widgets.js"
+  "The filename of the JavaScript file which manages all standard widget
+functionality.")
 
 
 (defclass <widget-holder> ()

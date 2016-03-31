@@ -11,13 +11,21 @@
         :caveman2-widgets.util
         :caveman2-widgets.widget)
   (:export
+   :*jquery-cdn-link*
+
    :<js-file>
    :<css-file>
+   :<header-widget>
+   :title
+   :charset
 
    :<body-widget>
 
    :<html-document-widget>))
 (in-package :caveman2-widgets.document)
+
+(defvar *jquery-cdn-link* "https://code.jquery.com/jquery-2.2.2.min.js"
+  "The URL to access jQuery.")
 
 (defclass <file> ()
   ((path
@@ -30,26 +38,39 @@
 
 (defmethod render-widget ((this <js-file>))
   (concatenate 'string
-               "<script src=\"" (path this) "\" type=\"text/javascript\">"))
+               "<script src=\"" (path this) "\" type=\"text/javascript\"></script>"))
 
 (defclass <css-file> (<file>)
   ())
 
 (defmethod render-widget ((this <css-file>))
   (concatenate 'string
-               "<link rel=\"stylesheet\" href=\"" (path this) "\">")  )
+               "<link rel=\"stylesheet\" href=\"" (path this) "\"></link>"))
 
 (defclass <header-widget> ()
   ((css-files
     :initform '()
     :reader css-files)
    (js-files
-    :initform '()
+    :initform
+    (list
+     (make-instance '<js-file>
+                    :path *jquery-cdn-link*)
+     (make-instance '<js-file>
+                    :path
+                    (concatenate 'string
+                                 *javascript-path*
+                                 *widgets-js-filename*))
+     )
     :reader js-files)
    (title
     :initform nil
     :initarg :title
-    :reader title)))
+    :reader title)
+   (charset
+    :initform "utf-8"
+    :initarg :charset
+    :reader charset)))
 
 (defmethod render-widget ((this <header-widget>))
   (let ((ret-val "<head>"))
@@ -66,10 +87,9 @@
     (setf ret-val
           (concatenate 'string
                        ret-val
-                       (or (title this)
-                           "")
+                       "<meta charset=\"" (charset this) "\">"
+                       "<title>" (or (title this) "") "</title>"
                        "</head>"))
-
     ret-val))
 
 (defmethod append-item ((this <header-widget>) (item <js-file>))
@@ -93,7 +113,8 @@
 
 (defclass <html-document-widget> ()
   ((header
-    :initform (make-instance '<header-widget>)
+    :initform (error "Must supply a <header-widget>.")
+    :initarg :header
     :type '<header-widget>
     :reader header)
    (body
@@ -103,21 +124,12 @@
     :reader body))
   (:documentation "The body-widget will be wrapped in a div with the id \"body\" automatically."))
 
-(defmethod append-item ((this <html-document-widget>) (item <file>))
-  (append-item (header this) item))
-
 (defmethod render-widget ((this <html-document-widget>))
-  (let* ((rendered-body (render-widget (body this)))
-         ;; (body-first-part (subseq ret-val 0 4))
-         ;; (body-second-part (subseq ret-val 4 (length ret-val)))
-         )
+  (let* ((rendered-body (render-widget (body this))))
     (concatenate 'string
                  "<html>"
                  (render-widget (header this))
-
                  "<body><div id=\"body\">"
-                 ;; body-first-part
-                 ;; body-second-part
                  rendered-body
                  "</div></body>"
                  "</html>")))

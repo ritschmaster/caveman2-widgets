@@ -75,7 +75,7 @@ will be called when the route is accessed.
                       :method (http-method widget))
         callback))
 
-(defvar *button-call-path* nil)
+(defvar *button-call-path* "buttons")
 (defvar *input-field-for-old-uri* "oldUri")
 
 (defclass <button-widget> (<callback-widget>)
@@ -118,7 +118,7 @@ will be called when the route is accessed.
                                   (redirect oldUrl)))))
     ret-val))
 
-(defvar *link-call-path* nil)
+(defvar *link-call-path* "links")
 
 (defclass <link-widget> (<callback-widget>)
   ()
