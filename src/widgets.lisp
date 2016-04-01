@@ -22,14 +22,17 @@
    :delete-item
    :find-item
 
-   ;; from caveman2-widgets.widgetp
+   ;; from caveman2-widgets.widget
    :<widget>
    :make-widget
    :render-widget
    :render-widget-rest
+
    :set-widget-for-session
    :get-widget-for-session
    :remove-widget-for-session
+
+   :mark-dirty
 
    ;; from caveman2-widgets.callback-widget
    :<callback-widget>
@@ -62,7 +65,8 @@
                               (css-path *css-path*)
                               (rest-path *rest-path*)
                               (button-call-path *button-call-path*)
-                              (link-call-path *link-call-path*))
+                              (link-call-path *link-call-path*)
+                              (dirty-objects-uri-path *dirty-objects-uri-path*))
   (declare (<app> webapp)
            (string javascript-path)
            (string css-path)
@@ -75,6 +79,9 @@
   (setf *rest-path* rest-path)
   (setf *button-call-path* button-call-path)
   (setf *link-call-path* link-call-path)
+  (setf *dirty-objects-uri-path* dirty-objects-uri-path)
+
+  (init-mark-dirty *web* *dirty-objects-uri-path*)
 
   (defroute-static
       (concatenate 'string

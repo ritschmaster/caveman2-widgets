@@ -77,6 +77,15 @@
 
 (defgeneric append-item (this item))
 
+(defmethod append-item ((this t) (item t))
+  (error "Not supported yet!"))
+
 (defgeneric delete-item (this item))
 
+(defmethod delete-item ((this t) (item t))
+  (error "Not supported yet!"))
+
 (defgeneric find-item (this to-find))
+
+(defmethod find-item ((this t) (item t))
+  (error "Not supported yet!"))

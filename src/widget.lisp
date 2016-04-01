@@ -23,6 +23,10 @@
    :get-widget-for-session
    :remove-widget-for-session
 
+   :mark-dirty
+   :*dirty-objects-uri-path*
+   :init-mark-dirty
+
    :*rest-path*
    :*web*
    :*javascript-path*
@@ -150,8 +154,9 @@ widget as string. It is intended to use this within a simple HTML
 transfer or embedded in another page."))
 
 (defmethod render-widget :around ((this <widget>))
+  (demark-dirty this)
   (concatenate 'string
-               "<div class=\"widget "
+               "<div id=\"" (id this) "\" class=\"widget "
                (get-trimmed-class-name this)
                "\">"
                (call-next-method this)
@@ -163,8 +168,19 @@ transfer or embedded in another page."))
 widget as string. To generate a method for a specific HTTP method you
 can do the following:
 
-(defmethod render-widget-rest ((this <widget>) (method (eql :get)))
+(defmethod render-widget-rest ((this <widget>) (method (eql :get)) (args t))
   \"HTML output for the REST when GET.\")"))
+
+(defmethod render-widget-rest ((this <widget>)
+                               method
+                               args)
+  (render-widget this))
+
+(defmethod render-widget-rest :around ((this <widget>)
+                                       method
+                                       args)
+  (demark-dirty this)
+  (call-next-method this method args))
 
 (defvar *global-widget-holder*
   (make-instance '<widget-holder>))
@@ -189,13 +205,17 @@ can do the following:
 
 (defun set-widget-for-session (session-tag widget &optional (session *session*))
   "Saves a widget in the session variable. This should be considered ONLY for
-session scoped widgets."
+session scoped widgets.
+
+@return The former value in the SESSION at position SESSION-TAG."
   (declare (keyword session-tag)
            (<widget> widget)
            (hash-table session))
-  (when (null (gethash session-tag session))
-    (setf (gethash session-tag session)
-          widget)))
+  (let ((ret-val (gethash session-tag session)))
+    (when (null ret-val)
+      (setf (gethash session-tag session)
+            widget))
+    ret-val))
 
 (defun get-widget-for-session (session-tag  &optional (session *session*))
   "Gets a previously saved widget from the session variable (e.g. to render
@@ -209,3 +229,85 @@ it)."
   (declare (keyword session-tag)
            (hash-table session))
   (setf (gethash session-tag session) nil))
+
+(defvar *dirty-objects-session-key* :dirty-object-ids)
+
+(defclass <dirty-widget-holder> ()
+  ((widgets
+    :initform '()
+    :documentation "Holds the ids of all widgets that are marked as dirty.")))
+
+(defmethod append-item ((this <dirty-widget-holder>) (item <widget>))
+  (let ((found nil)
+        (widget-id (id item)))
+    (dolist (dirty-widget (slot-value this 'widgets))
+      (when (string= dirty-widget
+                     widget-id)
+        (setf found t)))
+    (when (null found)
+      (setf
+       (slot-value this 'widgets)
+       (append (slot-value this 'widgets)
+               (list
+                widget-id))))))
+
+(defmethod delete-item ((this <dirty-widget-holder>) (item <widget>))
+  (setf
+   (slot-value this 'widgets)
+   (remove (id item)
+           (slot-value this 'widgets))))
+
+(defun mark-dirty (widget &optional (session *session*))
+  "Marks a widget that it should be rendered ASAP."
+  (declare (<widget> widget)
+           (hash-table session))
+
+  (when (null (gethash *dirty-objects-session-key* session))
+    (setf (gethash *dirty-objects-session-key* session)
+          (make-instance '<dirty-widget-holder>)))
+  (append-item (get-widget-for-session *dirty-objects-session-key*)
+               widget))
+
+(defun demark-dirty (widget &optional (session *session*))
+  "Marks a widget as rendered."
+  (declare (<widget> widget)
+           (hash-table session))
+  (when (get-widget-for-session *dirty-objects-session-key*)
+    (delete-item (get-widget-for-session *dirty-objects-session-key*)
+                 widget)))
+
+(defvar *dirty-objects-uri-path* "/widgets/dirty")
+
+(defun init-mark-dirty (web &optional (uri-path *dirty-objects-uri-path*))
+  (declare (string uri-path)
+           (web <app>))
+  (setf (ningle:route web
+                      uri-path
+                      :method :get)
+        #'(lambda (params)
+            (declare (ignore params))
+
+            (setf (getf (response-headers *response*) :content-type)
+                  "application/json")
+
+            (let ((ret-val "{\"dirtyObjects\":["))
+              (when (gethash *dirty-objects-session-key* *session*)
+                (let* ((dirty-widgets (slot-value (gethash *dirty-objects-session-key*
+                                                           *session*)
+                                                  'widgets))
+                       (len (length dirty-widgets)))
+                  (loop for i from 0 below len do
+                       (setf ret-val
+                             (concatenate 'string
+                                          ret-val
+                                          "\""
+                                          (elt dirty-widgets i)
+                                          "\""
+                                          (if (= i (- len 1))
+                                              ""
+                                              ","))))))
+              (setf ret-val
+                    (concatenate 'string
+                                 ret-val
+                                 "]}"))
+              ret-val))))

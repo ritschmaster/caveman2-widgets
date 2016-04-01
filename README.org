@@ -66,9 +66,6 @@ A very simple example of what you can do with it:
       "<h1>enabled!</h1>"
       "<h1>not enabled</h1>"))
 
-(defmethod render-widget-rest ((this <global-widget>) (method (eql :get)) (args t))
-  (render-widget this))
-
 (defvar *global-widget* (make-widget :global '<global-widget>))
 
 (defroute "/" ()
@@ -125,13 +122,7 @@ An example (with children):
                "\">"
                (caveman2-widgets.widget::id this)
                "</a></p>"
-               (render-widget (id-widget this))))
-
-(defmethod render-widget-rest ((this <session-widget>)
-                               (method (eql :get))
-                               (args t))
-  (render-widget this))
-
+               (render-widget (id-widget this)))) 
 
 (defroute "/" ()
   (set-widget-for-session :session-widget
@@ -218,6 +209,66 @@ To make your life really easy you can create an entire HTML document.
 
 #+END_SRC
 
+*** Marking widgets dirty
+You can mark specific widgets as dirty with the function
+MARK-DIRTY. This means that they will be reloaded dynamically (if the
+user has JavaScript is enabled). Please notice that you can mark *any*
+widget as dirty, therefore you can order JavaScript to reload global
+widgets as sessioned widgets.
+
+An example:
+#+BEGIN_SRC lisp
+(defclass <sessioned-widget> (<widget>)
+  ((enabled
+    :initform nil
+    :accessor enabled)))
+
+(defmethod render-widget ((this <sessioned-widget>))
+  (concatenate 'string
+               "<h2>Sessioned-widget:</h2>"
+               (if (enabled this)
+                   "<h3>enabled!</h3>"
+                   "<h3>not enabled</h3>")))
+
+
+(defclass <my-body-widget> (<widget>)
+  ())
+
+(defmethod render-widget ((this <my-body-widget>))
+  (concatenate 'string
+               "<h1>MARK-DIRTY test</h1>"
+               (render-widget
+                (get-widget-for-session :sessioned-widget))
+               (render-widget
+                (make-button
+                 :global "Enable"
+                 #'(lambda ()
+                     (let ((sessioned-widget
+                            (get-widget-for-session :sessioned-widget)))
+                       (when sessioned-widget
+                         (setf (enabled sessioned-widget) t)
+                         (mark-dirty sessioned-widget))))))
+               (render-widget
+                (make-button
+                 :global "Disable"
+                 #'(lambda ()
+                     (let ((sessioned-widget
+                            (get-widget-for-session :sessioned-widget)))
+                       (when sessioned-widget
+                         (setf (enabled sessioned-widget) nil)
+                         (mark-dirty sessioned-widget))))))))
+
+(defvar *header-widget* (make-instance '<header-widget>
+                                       :title "Mark-dirty test"))
+(defvar *my-body-widget* (make-widget :global '<my-body-widget>))
+
+(defroute "/mark-dirty-test" ()
+  (set-widget-for-session :sessioned-widget (make-widget :session '<sessioned-widget>))
+  (render-widget
+   (make-instance '<html-document-widget>
+                  :header *header-widget*
+                  :body *my-body-widget*)))
+#+END_SRC
 ** Things that happen automatically
 *** Automatically REST API creation
 If you create a widget then routes for a REST API will be added
@@ -261,6 +312,12 @@ an URL).
 *If you forget to use the JavaScript-files widgets might not work or
 even break. Most likely all dynamic content just won't work
 (automatically fallback to non-JS)*
+
+*** Session values
+This section should inform you have session keywords which you should
+absolutely not modify.
+- :WIDGET-HOLDER
+- :DIRTY-OBJECT-IDS
 
 ** Installation
 *** Quicklisp
