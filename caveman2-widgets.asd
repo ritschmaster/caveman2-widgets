@@ -11,7 +11,7 @@
 (in-package :caveman2-widgets-asd)
 
 (defsystem caveman2-widgets
-  :version "0.2"
+  :version "0.4"
   :author "Richard Paul Bäck"
   :license "LLGPL"
   :depends-on (:trivial-garbage
@@ -21,9 +21,10 @@
                         ((:file "util")
                          (:file "widget")
                          (:file "callback-widget")
+                         (:file "widgets")
                          (:file "document")
-                         (:file "widgets"))))
-  :description ""
+                         (:file "caveman2-widgets"))))
+  :description "Weblocks like widgets for caveman2."
   :long-description
   #.(with-open-file (stream (merge-pathnames
                              #p"README"

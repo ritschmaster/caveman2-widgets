@@ -33,13 +33,17 @@ $(document).ready(function() {
                 parsedHtml = $(parsedHtml).children();
               }
               dirtyHtml.empty();
-              dirtyHtml.append(parsedHtml);
+              dirtyHtml.append(parsedHtml); //.show("slow");
             }
           });
         });
       }
     });
   };
+
+  setInterval(function() {
+    processDirty();
+  }, 3000);
 
   $('.button-widget form').submit(function(e) {
     e.preventDefault();
