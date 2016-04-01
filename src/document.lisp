@@ -104,12 +104,6 @@
 (defclass <body-widget> (<widget>)
   ())
 
-
-(defmethod render-widget-rest ((this <body-widget>)
-                               (method (eql :get))
-                               (args t))
-  (render-widget this))
-
 (defclass <html-document-widget> ()
   ((header
     :initform (error "Must supply a <header-widget>.")

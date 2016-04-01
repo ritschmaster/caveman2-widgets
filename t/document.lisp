@@ -8,6 +8,10 @@
 (defmethod initialize-instance :after ((this <widget>) &key)
   "Disable the route creation for testing purposes.")
 
+(in-package :caveman2-widgets.widget)
+(setf *session* (make-hash-table :test 'equal))
+(in-package :caveman2-widgets-test.document)
+
 (defmethod render-widget ((this <body-widget>))
   "Sample output."
   "")
@@ -41,7 +45,7 @@
     header))
 
 (defparameter *body-expected-output*
-  "<div class=\"widget body-widget\"></div>")
+  "\<div id=\"[A-Za-z0-9]+\" class=\"widget body-widget\"\>\</div>")
 (defvar *body-widget*
   (let ((body (make-instance '<body-widget>)))
     body))
@@ -66,24 +70,24 @@
 (plan 5)
 
 (subtest "Testing <js-file>"
-  (is (render-widget *js-file*)
-      *js-file-expected-output*))
+         (is (render-widget *js-file*)
+             *js-file-expected-output*))
 
 (subtest "Testing <css-file>"
-  (is (render-widget *css-file*)
-      *css-file-expected-output*))
+         (is (render-widget *css-file*)
+             *css-file-expected-output*))
 
 (subtest "Testing <header-widget>"
-  (is (render-widget *header-widget*)
-      *header-expected-output*))
+         (is (render-widget *header-widget*)
+             *header-expected-output*))
 
 (subtest "Testing <body-widget>"
-  (is (render-widget *body-widget*)
-      *body-expected-output*))
+         (like (render-widget *body-widget*)
+             *body-expected-output*))
 
 (subtest "Testing <html-document-widget>"
-  (is (render-widget *document-widget*)
-      *document-expected-output*))
+         (like (render-widget *document-widget*)
+               *document-expected-output*))
 
 (setf prove:*default-reporter* :fiveAM)
 (finalize)

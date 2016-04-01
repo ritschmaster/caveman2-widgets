@@ -272,7 +272,9 @@ it)."
   "Marks a widget as rendered."
   (declare (<widget> widget)
            (hash-table session))
-  (when (get-widget-for-session *dirty-objects-session-key*)
+  (when (and
+         session
+         (get-widget-for-session *dirty-objects-session-key*))
     (delete-item (get-widget-for-session *dirty-objects-session-key*)
                  widget)))
 

@@ -68,7 +68,6 @@
                 (loop
                    for line = (read-line input nil 'eof)
                    until (eq line 'eof) do
-                     (print line)
                      (setf ret-val
                            (format nil "~a~%~a"
                                    ret-val
