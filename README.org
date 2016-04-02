@@ -344,12 +344,11 @@ absolutely not modify.
 - :DIRTY-OBJECT-IDS
 
 ** Installation
-*** Quicklisp
-Clone this repository into "~/quicklisp/local-projects" to QUICKLOAD
-it.
-*** Roswell
-Clone this repository into "~/.roswell/local-projects" to QUICKLOAD
-it.
+The Quicklisp request is pending!
+
+Until then you can clone this repository into
+"~/quicklisp/local-projects" or (if you are using [[https://github.com/roswell/roswell][Roswell]])
+"~/.roswell/local-projects" to QUICKLOAD it.
 ** Author
 
 + Richard Paul Bäck (richard.baeck@free-your-pc.com)

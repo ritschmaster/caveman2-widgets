@@ -282,7 +282,7 @@ it)."
 
 (defun init-mark-dirty (web &optional (uri-path *dirty-objects-uri-path*))
   (declare (string uri-path)
-           (web <app>))
+           (<app> web))
   (setf (ningle:route web
                       uri-path
                       :method :get)
