@@ -125,6 +125,7 @@ An example (with children):
                (render-widget (id-widget this)))) 
 
 (defroute "/" ()
+  (make-widget :session '<widget>) ;; init session
   (set-widget-for-session :session-widget
                           (make-widget :session '<session-widget>))
   (concatenate 'string
@@ -188,7 +189,7 @@ An example:
                                "http://github.com/ritschmaster")))
                (render-widget
                 (make-button :global
-                             "Reset session"
+                             "Button"
                              #'(lambda ()
                                  (format t "LOG: Button clicked!"))))))
 #+END_SRC
@@ -287,11 +288,45 @@ An example:
 (defvar *my-body-widget* (make-widget :global '<my-body-widget>))
 
 (defroute "/mark-dirty-test" ()
+  (make-widget :session '<widget>) ;; init session
   (set-widget-for-session :sessioned-widget (make-widget :session '<sessioned-widget>))
   (render-widget
    (make-instance '<html-document-widget>
                   :header *header-widget*
                   :body *my-body-widget*)))
+#+END_SRC
+
+*** Navigation objects
+You can create navigation objects too! The purpose of navigation
+objects is that you don't have to manage a navigation every again!
+Each navigation object contains another widget which displays the
+currently selected path. If you click on a navigation link that object
+is changed and refreshed (either via JavaScript or through the link).
+
+A very basic example:
+#+BEGIN_SRC lisp
+(defvar *first-widget*
+  (let ((ret (make-widget :global '<string-widget>)))
+    (setf (text ret) "<h1>Hello world from first</h1>")
+    ret))
+
+(defvar *second-widget*
+  (let ((ret (make-widget :global '<string-widget>)))
+    (setf (text ret) "<h1>Hello world from second</h1>")
+    ret))
+
+(defroute "/" ()
+  (make-widget :session '<widget>) ;; init session
+  (set-widget-for-session :nav-widget (make-widget :session '<navigation-widget>))
+  (append-item (get-widget-for-session :nav-widget)
+               (list "First widget" "first" *first-widget*))
+  (append-item (get-widget-for-session :nav-widget)
+               (list "Second widget" "second" *second-widget*))
+  (render-widget
+   (make-instance '<html-document-widget>
+                  :header (make-instance '<header-widget>
+                                         :title "Navigation test")
+                  :body (get-widget-for-session :nav-widget))))
 #+END_SRC
 ** Things that happen automatically
 *** Automatically REST API creation

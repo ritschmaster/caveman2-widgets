@@ -60,7 +60,7 @@ keyword (e.g. :post or :get")))
 ;;   (store-callback-for-widget (callback this)
 ;;                              (uri-path this)))
 
-(defun init-callback-widget (widget label callback)
+(defun init-callback-widget (widget label callback http-method)
   "
 @param callback The callback function for the route. This function
 will be called when the route is accessed.
@@ -68,11 +68,12 @@ will be called when the route is accessed.
 @param uri-path The path where to access the callback function."
   (declare (<callback-widget> widget)
            (string label)
-           (function callback))
+           (function callback)
+           (keyword http-method))
   (setf (slot-value widget 'label) label)
   (setf (ningle:route *web*
                       (uri-path widget)
-                      :method (http-method widget))
+                      :method http-method)
         callback))
 
 (defvar *button-call-path* "buttons")
@@ -111,11 +112,12 @@ will be called when the route is accessed.
                           #'(lambda (params)
                               (test-widget-if-session scope (id ret-val))
                               (funcall callback)
-                              (let ((oldUrl (get-value-for-ningle-request-parameter
+                              (let ((oldUrl (get-value-for-cons-list
                                              params
                                              *input-field-for-old-uri*)))
                                 (when oldUrl
-                                  (redirect oldUrl)))))
+                                  (redirect oldUrl))))
+                          (http-method ret-val))
     ret-val))
 
 (defvar *link-call-path* "links")
@@ -141,11 +143,14 @@ will be called when the route is accessed.
                (label this)
                "</a>"))
 
-(defun make-link (scope label callback)
+(defun make-link (scope label callback &optional (target-foreign-p nil))
   "@param callback The callback function for the button. This function
    will be called when the user clickes the link. The function must
    return a string. The returned string should be an URL to which the
-   server should redirect."
+   server should redirect.
+
+@param target-foreign-p When the given link redirects to another
+website."
   (declare (keyword scope)
            (string label)
            (function callback))
@@ -154,5 +159,16 @@ will be called when the route is accessed.
                           label
                           #'(lambda (params)
                               (test-widget-if-session scope (id ret-val))
-                              (redirect (funcall callback))))
+                              (redirect (concatenate 'string
+                                                     (if target-foreign-p
+                                                         ""
+                                                         "/")
+                                                     (funcall callback))))
+                          (http-method ret-val))
+    (init-callback-widget ret-val
+                          label
+                          #'(lambda (params)
+                              (test-widget-if-session scope (id ret-val))
+                              (funcall callback))
+                          :post)
     ret-val)) 

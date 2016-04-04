@@ -129,7 +129,7 @@ The REST can be accessed by the URI /*rest-path*/widget-name"
               #'(lambda (params)
                   (let* ((session-widget-holder
                           (gethash :widget-holder *session*))
-                         (requested-id (get-value-for-ningle-request-parameter
+                         (requested-id (get-value-for-cons-list
                                         params
                                         "id"))
                          (found-widget

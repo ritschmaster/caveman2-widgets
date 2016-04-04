@@ -13,7 +13,8 @@
         :caveman2-widgets.widget
         :caveman2-widgets.widgets
         :caveman2-widgets.callback-widget
-        :caveman2-widgets.document)
+        :caveman2-widgets.document
+        :caveman2-widgets.navigation)
   (:export
    ;; from this package
    :init-widgets
@@ -65,7 +66,11 @@
 
    :<body-widget>
 
-   :<html-document-widget>))
+   :<html-document-widget>
+
+   ;; from caveman2-widgets.navigation-widget
+   :<navigation-widget>
+   :current-page))
 (in-package :caveman2-widgets)
 
 (defun init-widgets (webapp &key

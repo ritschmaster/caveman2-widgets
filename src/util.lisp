@@ -22,7 +22,7 @@
    :defroute-static
    :get-trimmed-class-name
    :clean-list-of-broken-links
-   :get-value-for-ningle-request-parameter))
+   :get-value-for-cons-list))
 (in-package :caveman2-widgets.util)
 
 (defparameter *application-root* (asdf:system-source-directory :caveman2-widgets))
@@ -43,12 +43,13 @@
                  (null (trivial-garbage:weak-pointer-value item)))
              some-list))
 
-(defun get-value-for-ningle-request-parameter (params key)
-  (declare (string key))
+(defun get-value-for-cons-list (some-list key)
+  (declare (string key)
+           (list some-list))
   (cdr
    (assoc key
-          params
-          :test #'string=)))
+          some-list
+          :test #'equal)))
 
 (defun defroute-static (uri-path path app content-type)
   (declare (string uri-path)

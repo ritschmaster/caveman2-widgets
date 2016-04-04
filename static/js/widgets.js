@@ -33,7 +33,7 @@ $(document).ready(function() {
                 parsedHtml = $(parsedHtml).children();
               }
               dirtyHtml.empty();
-              dirtyHtml.append(parsedHtml); //.show("slow");
+              dirtyHtml.append(parsedHtml);
             }
           });
         });
@@ -43,7 +43,7 @@ $(document).ready(function() {
 
   setInterval(function() {
     processDirty();
-  }, 3000);
+  }, 10000);
 
   $('.button-widget form').submit(function(e) {
     e.preventDefault();
@@ -57,6 +57,17 @@ $(document).ready(function() {
     });
   });
 
-  $('.link-widget a').click(function(e) {
+  $('.navigation-widget ul .link-widget a').click(function(e) {
+    e.preventDefault();
+    var URL = $(this).attr('href');
+    $.ajax({
+      url: URL,
+      type: "POST",
+      error: function(jqXHR, status, errorMsg) {
+      },
+      success: function(data, status, jqXHR) {
+        processDirty();
+      }
+    });
   });
 });
