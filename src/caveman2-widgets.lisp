@@ -67,6 +67,8 @@
    :<body-widget>
 
    :<html-document-widget>
+   :header
+   :body
 
    ;; from caveman2-widgets.navigation-widget
    :<navigation-widget>

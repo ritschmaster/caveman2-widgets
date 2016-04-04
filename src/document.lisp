@@ -21,7 +21,9 @@
 
    :<body-widget>
 
-   :<html-document-widget>))
+   :<html-document-widget>
+   :header
+   :body))
 (in-package :caveman2-widgets.document)
 
 (defvar *jquery-cdn-link* "https://code.jquery.com/jquery-2.2.2.min.js"
@@ -106,15 +108,15 @@
 
 (defclass <html-document-widget> ()
   ((header
-    :initform (error "Must supply a <header-widget>.")
+    :initform nil ;; (error "Must supply a <header-widget>.")
     :initarg :header
     :type '<header-widget>
-    :reader header)
+    :accessor header)
    (body
-    :initform (error "Must supply a <body-widget>.")
+    :initform nil ;; (error "Must supply a <body-widget>.")
     :initarg :body
     :type '<body-widget>
-    :reader body))
+    :accessor body))
   (:documentation "The body-widget will be wrapped in a div with the id \"body\" automatically."))
 
 (defmethod render-widget ((this <html-document-widget>))

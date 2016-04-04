@@ -19,7 +19,7 @@
    :current-page))
 (in-package :caveman2-widgets.navigation)
 
-(defclass <navigation-widget> (<body-widget>)
+(defclass <navigation-widget> (<html-document-widget> <widget>)
   ((pages
     :initform '()
     :initarg :pages
@@ -28,46 +28,58 @@
 and it should look like: (list (list \"pagetitle\" \"uri-path\" <widget>))")
    (current-page
     :initform nil
-    :accessor current-page
+    :reader current-page
     :type 'string
     :documentation "The name for the current page to display.")
    (composite
     :initform (make-widget :session '<composite-widget>)
     :reader composite)))
 
+(defgeneric (setf current-page) (value this))
+
+(defmethod (setf current-page) (value (this <navigation-widget>))
+  "@param value Must be an uri path string"
+  (setf (slot-value this 'current-page) value)
+  (dolist (page (pages this))
+    (when (string= value
+                   (second page))
+      (setf (slot-value (composite this) 'widgets)
+            (list (third page)))))
+  (mark-dirty (composite this)))
+
+
 (defmethod render-widget ((this <navigation-widget>))
-  (let ((ret-val "<ul>")
-        (current-widget nil))
-    (dolist (page (pages this))
-      (setf ret-val
-            (concatenate 'string
-                         ret-val
-                         "<li>"
-                         (render-widget
-                          (make-link :global (first page)
-                                     #'(lambda ()
-                                         (setf (current-page this) (second page))
-                                         (dolist (thispage (pages this))
-                                           (when (string= (second thispage)
-                                                          (current-page this))
-                                             (setf (slot-value (composite this) 'widgets)
-                                                   (list (third thispage)))))
-                                         (mark-dirty (composite this))
-                                         (second page))))
-                         "</li>"))
-      (when (string= (second page)
-                     (current-page this))
-        (setf current-widget (third page))))
-    (when (null current-widget)
-      (setf current-widget (third (first pages))))
-    (setf (slot-value (composite this) 'widgets)
-          (list current-widget))
-    (setf ret-val
-          (concatenate 'string
-                       ret-val
-                       "</ul>"
-                       (render-widget (composite this))))
-    ret-val))
+  (setf (body this)
+        (let ((str-widget (make-widget :session '<string-widget>))
+              (ret-val "<ul>")
+              (current-widget nil))
+          (dolist (page (pages this))
+            (setf ret-val
+                  (concatenate 'string
+                               ret-val
+                               "<li>"
+                               (render-widget
+                                (make-link :global (first page)
+                                           #'(lambda ()
+                                               (setf (current-page this) (second page))
+                                               (second page))))
+                               "</li>"))
+            (when (string= (second page)
+                           (current-page this))
+              (setf current-widget (third page))))
+          (when (null current-widget)
+            (setf current-widget (third (first pages))))
+          (setf (slot-value (composite this) 'widgets)
+                (list current-widget))
+          (setf ret-val
+                (concatenate 'string
+                             ret-val
+                             "</ul>"
+                             (render-widget (composite this))))
+          (setf (text str-widget)
+                ret-val)
+          str-widget))
+  (call-next-method this))
 
 (defmethod append-item ((this <navigation-widget>) (item list))
   "@param item This should be a list which should looke like
@@ -79,7 +91,7 @@ that: (list \"pagetitle\" \"uri-path\" <widget-for-pagetitle>)."
                                        nil))
                                (pages this))))
     (when (null (current-page this))
-      (setf (slot-value this 'current-page)
+      (setf (current-page this)
             (second (first (pages this)))))
     (if (null found-widget)
         (progn
@@ -93,7 +105,6 @@ that: (list \"pagetitle\" \"uri-path\" <widget-for-pagetitle>)."
                               :method :get)
                 #'(lambda (params)
                     (declare (ignore params))
-                    (setf (slot-value this 'current-page)
-                          (second item))
+                    (setf (current-page this) (second item))
                     (render-widget this))))
         nil)))

@@ -318,15 +318,17 @@ A very basic example:
 (defroute "/" ()
   (make-widget :session '<widget>) ;; init session
   (set-widget-for-session :nav-widget (make-widget :session '<navigation-widget>))
-  (append-item (get-widget-for-session :nav-widget)
-               (list "First widget" "first" *first-widget*))
-  (append-item (get-widget-for-session :nav-widget)
-               (list "Second widget" "second" *second-widget*))
-  (render-widget
-   (make-instance '<html-document-widget>
-                  :header (make-instance '<header-widget>
-                                         :title "Navigation test")
-                  :body (get-widget-for-session :nav-widget))))
+  (let ((nav-widget (get-widget-for-session :nav-widget)))
+    (append-item nav-widget
+                 (list "First widget" "first" *first-widget*))
+    (append-item nav-widget
+                 (list "Second widget" "second" *second-widget*))
+    (when (null (header nav-widget))
+      (setf (header nav-widget)
+            (make-instance '<header-widget>
+                           :title "Navigation test")))
+
+    (render-widget nav-widget)))
 #+END_SRC
 ** Things that happen automatically
 *** Automatically REST API creation
@@ -348,6 +350,11 @@ can access.
 (defmethod render-widget-rest ((this <my-widget>) (method (eql :post)) (args t))
   (render-widget this))
 #+END_SRC
+
+For each button there will be an URI like "/buttons/BUTTONID". You can
+access buttons via POST only. Links get a URI like "/links/LINKID" and
+can be accessed either by GET (get a redirect to the stored link) or
+by POST (return only the value of the link).
 
 *** Encapsulating widgets with divs
 Each widget gets wrapped in a div automatically. Therefore you can

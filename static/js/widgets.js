@@ -66,6 +66,10 @@ $(document).ready(function() {
       error: function(jqXHR, status, errorMsg) {
       },
       success: function(data, status, jqXHR) {
+        var stateObj = { };
+        var title = data;
+        var url = data;
+        history.pushState(stateObj, title, url);
         processDirty();
       }
     });

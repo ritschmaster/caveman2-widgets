@@ -149,8 +149,8 @@ will be called when the route is accessed.
    return a string. The returned string should be an URL to which the
    server should redirect.
 
-@param target-foreign-p When the given link redirects to another
-website."
+@param target-foreign-p When the given link redirects absolute (like
+http://...)."
   (declare (keyword scope)
            (string label)
            (function callback))
