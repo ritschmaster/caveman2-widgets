@@ -20,7 +20,10 @@
 (in-package :caveman2-widgets.navigation)
 
 (defclass <navigation-widget> (<html-document-widget> <widget>)
-  ((pages
+  ((created-paths
+    :initform '()
+    :allocation :class)
+   (pages
     :initform '()
     :initarg :pages
     :reader pages
@@ -81,15 +84,19 @@ and it should look like: (list (list \"pagetitle\" \"uri-path\" <widget>))")
           str-widget))
   (call-next-method this))
 
+(defmethod find-item ((this <navigation-widget>) (item string))
+  "@param item The URI path as string."
+  (find-if #'(lambda (find-item)
+               (if (string= (second find-item)
+                            item)
+                   t
+                   nil))
+           (pages this)))
+
 (defmethod append-item ((this <navigation-widget>) (item list))
   "@param item This should be a list which should looke like
 that: (list \"pagetitle\" \"uri-path\" <widget-for-pagetitle>)."
-  (let ((found-widget (find-if #'(lambda (find-item)
-                                   (if (string= (second find-item)
-                                                (second item))
-                                       t
-                                       nil))
-                               (pages this))))
+  (let ((found-widget (find-item this (second item))))
     (when (null (current-page this))
       (setf (current-page this)
             (second (first (pages this)))))
@@ -98,13 +105,20 @@ that: (list \"pagetitle\" \"uri-path\" <widget-for-pagetitle>)."
           (setf (slot-value this 'pages)
                 (append (slot-value this 'pages)
                         (list item)))
-          (setf (ningle:route *web*
-                              (concatenate 'string
-                                           "/"
-                                           (second item))
-                              :method :get)
-                #'(lambda (params)
-                    (declare (ignore params))
-                    (setf (current-page this) (second item))
-                    (render-widget this))))
+          (when (null (find (second item)
+                            (slot-value this 'created-paths)
+                            :test #'equal))
+            (setf (slot-value this 'created-paths)
+                  (append (slot-value this 'created-paths)
+                          (list (second item))))
+            (setf (ningle:route *web*
+                                (concatenate 'string
+                                             "/"
+                                             (second item))
+                                :method :get)
+                  #'(lambda (params)
+                      (declare (ignore params))
+                      (setf (current-page this) (second item))
+                      (render-widget this)))
+            (nconc found-widget (list t))))
         nil)))
