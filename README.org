@@ -315,20 +315,32 @@ A very basic example:
     (setf (text ret) "<h1>Hello world from second</h1>")
     ret))
 
-(defroute "/" ()
-  (make-widget :session '<widget>) ;; init session
-  (set-widget-for-session :nav-widget (make-widget :session '<navigation-widget>))
-  (let ((nav-widget (get-widget-for-session :nav-widget)))
-    (append-item nav-widget
-                 (list "First widget" "first" *first-widget*))
-    (append-item nav-widget
-                 (list "Second widget" "second" *second-widget*))
-    (when (null (header nav-widget))
-      (setf (header nav-widget)
-            (make-instance '<header-widget>
-                           :title "Navigation test")))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Usage without the helper macro (not recommended):
+;; (defroute "/" ()
+;;   (make-widget :session '<widget>) ;; init session
+;;   (set-widget-for-session :nav-widget (make-widget :session '<navigation-widget>))
+;;   (let ((nav-widget (get-widget-for-session :nav-widget)))
+;;     (append-item nav-widget
+;;                  (list "First widget" "first" *first-widget*))
+;;     (append-item nav-widget
+;;                  (list "Second widget" "second" *second-widget*))
+;;     (when (null (header nav-widget))
+;;       (setf (header nav-widget)
+;;             (make-instance '<header-widget>
+;;                            :title "Navigation test")))
+;;     (render-widget nav-widget)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-    (render-widget nav-widget)))
+(defroute "/" ()
+  (with-navigation-widget (:nav-widget
+                           navigation-widget
+                           (make-instance '<header-widget>
+                                          :title "Navigation test"))
+    (append-item navigation-widget
+                 (list "First widget" "first" *first-widget*))
+    (append-item navigation-widget
+                 (list "Second widget" "second" *second-widget*))))
 #+END_SRC
 ** Things that happen automatically
 *** Automatically REST API creation

@@ -14,7 +14,8 @@
         :caveman2-widgets.widgets
         :caveman2-widgets.callback-widget
         :caveman2-widgets.document
-        :caveman2-widgets.navigation)
+        :caveman2-widgets.navigation
+        :caveman2-widgets.helper-macros)
   (:export
    ;; from this package
    :init-widgets
@@ -72,7 +73,11 @@
 
    ;; from caveman2-widgets.navigation-widget
    :<navigation-widget>
-   :current-page))
+   :current-page
+
+   ;; from caveman2-widgets.helper-macros
+   :with-navigation-widget
+   ))
 (in-package :caveman2-widgets)
 
 (defun init-widgets (webapp &key
