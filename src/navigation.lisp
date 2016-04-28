@@ -54,33 +54,27 @@ and it should look like: (list (list \"pagetitle\" \"uri-path\" <widget>))")
 (defmethod render-widget ((this <navigation-widget>))
   (setf (body this)
         (let ((str-widget (make-widget :session '<string-widget>))
-              (ret-val "<ul>")
               (current-widget nil))
-          (dolist (page (pages this))
-            (setf ret-val
-                  (concatenate 'string
-                               ret-val
-                               "<li>"
-                               (render-widget
-                                (make-link :global (first page)
-                                           #'(lambda ()
-                                               (setf (current-page this) (second page))
-                                               (second page))))
-                               "</li>"))
-            (when (string= (second page)
-                           (current-page this))
-              (setf current-widget (third page))))
-          (when (null current-widget)
-            (setf current-widget (third (first pages))))
-          (setf (slot-value (composite this) 'widgets)
-                (list current-widget))
-          (setf ret-val
-                (concatenate 'string
-                             ret-val
-                             "</ul>"
-                             (render-widget (composite this))))
           (setf (text str-widget)
-                ret-val)
+                (with-output-to-string (ret-val)
+                  (format ret-val "<ul>")
+                  (dolist (page (pages this))
+                    (format ret-val "<li>")
+                    (format ret-val (render-widget
+                                     (make-link :global (first page)
+                                                #'(lambda ()
+                                                    (setf (current-page this) (second page))
+                                                    (second page)))))
+                    (format ret-val "</li>")
+                    (when (string= (second page)
+                                   (current-page this))
+                      (setf current-widget (third page))))
+                  (when (null current-widget)
+                    (setf current-widget (third (first (pages this)))))
+                  (setf (slot-value (composite this) 'widgets)
+                        (list current-widget))
+                  (format ret-val "</ul>")
+                  (format ret-val (render-widget (composite this)))))
           str-widget))
   (call-next-method this))
 

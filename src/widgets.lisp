@@ -43,10 +43,6 @@
             item))))
 
 (defmethod render-widget ((this <composite-widget>))
-  (let ((ret-val ""))
+  (with-output-to-string (ret-val)
     (dolist (widget (slot-value this 'widgets))
-      (setf ret-val
-            (concatenate 'string
-                         ret-val
-                         (render-widget widget))))
-    ret-val))
+      (format ret-val (render-widget widget)))))

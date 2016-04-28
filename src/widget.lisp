@@ -155,12 +155,12 @@ transfer or embedded in another page."))
 
 (defmethod render-widget :around ((this <widget>))
   (demark-dirty this)
-  (concatenate 'string
-               "<div id=\"" (id this) "\" class=\"widget "
-               (get-trimmed-class-name this)
-               "\">"
-               (call-next-method this)
-               "</div>"))
+  (with-output-to-string (ret-val)
+    (format ret-val "<div id=\"" (id this) "\" class=\"widget ")
+    (format ret-val (get-trimmed-class-name this))
+    (format ret-val "\">")
+    (format ret-val (call-next-method this))
+    (format ret-val "</div>")))
 
 (defgeneric render-widget-rest (this method args)
   (:documentation "
