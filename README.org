@@ -13,6 +13,12 @@ the framework automatically creates your site for dynamically
 approach this means that you don't have to manage or even care to
 refresh parts of your website, because widgets can do that
 by themselves!
+** Installation
+You can use caveman2-widgets with Quicklisp!
+
+If you want to contribute or be always up to date you can clone this
+git-repository into "~/quicklisp/local-projects" or (if you are using
+[[https://github.com/roswell/roswell][Roswell]]) "~/.roswell/local-projects" to QUICKLOAD it.
 
 ** Usage
 *** General 
@@ -46,12 +52,14 @@ called "src/web.lisp". In this file you can adapt the following:
 ;; from now on you can do whatever you want
 #+END_SRC
 
+*If you create objects from your widget classes, then please always
+use the MAKE-WIDGET function!* This method should be used, since it
+does all the background stuff for you.
+
 *** Global scope
 There are two scopes: /global/ and /session/. The global scope
 "limits" the widget to *all* users. Therefore if you create a stateful
-widget the state will be displayed to all users of your site. We
-supplied the method MAKE-WIDGET to generate new widgets. This method
-should be used, since it does all the background stuff for you. Use
+widget the state will be displayed to all users of your site. Use
 MAKE-WIDGET with :GLOBAL to get a globally scoped widget.
 
 A very simple example of what you can do with it:
@@ -82,11 +90,12 @@ A very simple example of what you can do with it:
 
 *** Session scope
 The other option is to use a /session/ scope. This is a bit more
-tricky because all your /session/ widgets must be stored with the
-session. :SESSION is the keyword for MAKE-WIDGET to get a /session/
-widget. Of course you only need to save the top level (highest) widget
-of a widget tree in the session (the children will be saved where the
-parent is). A short overview of the functions:
+tricky because all your /session/ widgets must be stored within the
+session (but not as user of this framework). :SESSION is the keyword
+for MAKE-WIDGET to get a /session/ widget. Of course you only need to
+save the top level (highest) widget of a widget tree in the session
+(the children will be saved where the parent is). A short overview of
+the functions:
 - SET-WIDGET-FOR-SESSION :: Saves a widget in the session
      variable. This should be considered ONLY for session scoped
      widgets.
@@ -238,8 +247,8 @@ To make your life really easy you can create an entire HTML document.
 You can mark specific widgets as dirty with the function
 MARK-DIRTY. This means that they will be reloaded dynamically (if the
 user has JavaScript is enabled). Please notice that you can mark *any*
-widget as dirty, therefore you can order JavaScript to reload global
-widgets as sessioned widgets.
+widget as dirty. Therefore you can order JavaScript to reload global
+widgets and sessioned widgets.
 
 An example:
 #+BEGIN_SRC lisp
@@ -298,10 +307,12 @@ An example:
 
 *** Navigation objects
 You can create navigation objects too! The purpose of navigation
-objects is that you don't have to manage a navigation every again!
+objects is that you don't have to manage a navigation ever again!
 Each navigation object contains another widget which displays the
 currently selected path. If you click on a navigation link that object
-is changed and refreshed (either via JavaScript or through the link).
+is changed and refreshed (either via JavaScript or through the
+link). Please keep in mind that navigation objects are *session
+stateful widgets*.
 
 A very basic example:
 #+BEGIN_SRC lisp
@@ -342,7 +353,17 @@ A very basic example:
     (append-item navigation-widget
                  (list "Second widget" "second" *second-widget*))))
 #+END_SRC
+
+If the default navigation object doesn't render as you wish, you can
+subclass it and overwrite the RENDER-WIDGET method.
+
+TODO: split the navigation render in header and content (therefore
+subclassing and overwriting is currently a pain).
+
 ** Things that happen automatically
+The following things you should keep in mind when using
+caveman2-widgets.
+
 *** Automatically REST API creation
 If you create a widget then routes for a REST API will be added
 automatically. Suppose you subclass <widget> with the class
@@ -397,12 +418,6 @@ absolutely not modify.
 - :WIDGET-HOLDER
 - :DIRTY-OBJECT-IDS
 
-** Installation
-The Quicklisp request is pending!
-
-Until then you can clone this repository into
-"~/quicklisp/local-projects" or (if you are using [[https://github.com/roswell/roswell][Roswell]])
-"~/.roswell/local-projects" to QUICKLOAD it.
 ** Author
 
 + Richard Paul Bäck (richard.baeck@free-your-pc.com)
