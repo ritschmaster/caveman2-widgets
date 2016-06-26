@@ -224,7 +224,11 @@ To make your life really easy you can create an entire HTML document.
   "Hello from the other page!")
 
 (defvar *header-widget* (make-instance '<header-widget>
-                                       :title "Widgets test"))
+                                       ;; the title when this header is used
+                                       :title "Widgets test"
+
+                                       ;; the icon when this header is used
+                                       :icon-path "/images/icon.png"))
 (defvar *root-widget* (make-widget :global '<root-widget>))
 (defvar *otherpage-widget* (make-widget :global '<otherpage-widget>))
 
@@ -233,6 +237,7 @@ To make your life really easy you can create an entire HTML document.
   ;; /rest/root-widget?id=(caveman2-widgets.widget::id *root-widget*)
   (render-widget
    (make-instance '<html-document-widget>
+                  ;; sets this specific header for this page
                   :header *header-widget*
                   :body *root-widget*)))
 (defroute "/otherpage" ()

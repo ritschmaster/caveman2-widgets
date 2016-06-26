@@ -17,6 +17,7 @@
    :<css-file>
    :<header-widget>
    :title
+   :icon-path
    :charset
 
    :<body-widget>
@@ -68,30 +69,36 @@
     :initform nil
     :initarg :title
     :reader title)
+   (icon-path
+    :initform nil
+    :initarg :icon-path
+    :accessor icon-path
+    :documentation "The path to a specific image to use as icon for page.")
    (charset
     :initform "utf-8"
     :initarg :charset
     :reader charset)))
 
 (defmethod render-widget ((this <header-widget>))
-  (let ((ret-val "<head>"))
+  (with-output-to-string (ret-val)
+    (format ret-val "<head>")
+
+    (format ret-val "<title>~a</title>" (or (title this) ""))
+    (format ret-val "<meta charset=\"~a\">" (charset this))
+    (when (icon-path this)
+      (format ret-val "<link href=\"~a\" type=\"image/~a\" rel=\"icon\">"
+              (icon-path this)
+              (subseq (icon-path this)
+                      (- (length (icon-path this)) 3)
+                      (length (icon-path this)))))
+
     (dolist (css-file (css-files this))
-      (setf ret-val
-            (concatenate 'string
-                         ret-val
-                         (render-widget css-file))))
+      (format ret-val (render-widget css-file)))
+
     (dolist (js-file (js-files this))
-      (setf ret-val
-            (concatenate 'string
-                         ret-val
-                         (render-widget js-file))))
-    (setf ret-val
-          (concatenate 'string
-                       ret-val
-                       "<meta charset=\"" (charset this) "\">"
-                       "<title>" (or (title this) "") "</title>"
-                       "</head>"))
-    ret-val))
+      (format ret-val (render-widget js-file)))
+
+    (format ret-val "</head>")))
 
 (defmethod append-item ((this <header-widget>) (item <js-file>))
   (setf (slot-value this 'js-files)
