@@ -68,7 +68,7 @@
    (title
     :initform nil
     :initarg :title
-    :reader title)
+    :accessor title)
    (icon-path
     :initform nil
     :initarg :icon-path
@@ -77,7 +77,7 @@
    (charset
     :initform "utf-8"
     :initarg :charset
-    :reader charset)))
+    :accessor charset)))
 
 (defmethod render-widget ((this <header-widget>))
   (with-output-to-string (ret-val)

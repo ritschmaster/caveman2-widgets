@@ -16,7 +16,8 @@
   (:export
    :<navigation-widget>
    :pages
-   :current-page))
+   :current-page
+   :base-path))
 (in-package :caveman2-widgets.navigation)
 
 (defclass <navigation-widget> (<html-document-widget> <widget>)
@@ -36,7 +37,13 @@ and it should look like: (list (list \"pagetitle\" \"uri-path\" <widget>))")
     :documentation "The name for the current page to display.")
    (composite
     :initform (make-widget :session '<composite-widget>)
-    :reader composite)))
+    :reader composite)
+   (base-path
+    :initform ""
+    :initarg :base-path
+    :accessor base-path
+    :documentation "Determines the path for this navigation. It does
+not need an initial or trailing forward slash.")))
 
 (defgeneric (setf current-page) (value this))
 
@@ -64,7 +71,10 @@ and it should look like: (list (list \"pagetitle\" \"uri-path\" <widget>))")
                                      (make-link :global (first page)
                                                 #'(lambda ()
                                                     (setf (current-page this) (second page))
-                                                    (second page)))))
+                                                    (concatenate 'string
+                                                                 (base-path this)
+                                                                 "/"
+                                                                 (second page))))))
                     (format ret-val "</li>")
                     (when (string= (second page)
                                    (current-page this))
@@ -107,6 +117,8 @@ that: (list \"pagetitle\" \"uri-path\" <widget-for-pagetitle>)."
                           (list (second item))))
             (setf (ningle:route *web*
                                 (concatenate 'string
+                                             "/"
+                                             (base-path this)
                                              "/"
                                              (second item))
                                 :method :get)

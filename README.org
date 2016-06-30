@@ -333,10 +333,11 @@ A very basic example:
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Usage without the helper macro (not recommended):
-;; (defroute "/" ()
+;; (defroute "/sophisticated/path" ()
 ;;   (make-widget :session '<widget>) ;; init session
 ;;   (set-widget-for-session :nav-widget (make-widget :session '<navigation-widget>))
 ;;   (let ((nav-widget (get-widget-for-session :nav-widget)))
+;;     (setf (base-path nav-widget) "sophisticated/path")
 ;;     (append-item nav-widget
 ;;                  (list "First widget" "first" *first-widget*))
 ;;     (append-item nav-widget
@@ -348,11 +349,12 @@ A very basic example:
 ;;     (render-widget nav-widget)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defroute "/" ()
+(defroute "/sophisticated/path" ()
   (with-navigation-widget (:nav-widget
                            navigation-widget
                            (make-instance '<header-widget>
                                           :title "Navigation test"))
+    (setf (base-path navigation-widget) "sophisticated/path")
     (append-item navigation-widget
                  (list "First widget" "first" *first-widget*))
     (append-item navigation-widget
@@ -360,7 +362,9 @@ A very basic example:
 #+END_SRC
 
 If the default navigation object doesn't render as you wish, you can
-subclass it and overwrite the RENDER-WIDGET method.
+subclass it and overwrite the RENDER-WIDGET method. Please notice that
+you can actually very easily adjust the path where the navigation and
+its widgets get rendered. The slot BASE-PATH is created for that.
 
 TODO: split the navigation render in header and content (therefore
 subclassing and overwriting is currently a pain).

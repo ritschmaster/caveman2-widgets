@@ -74,6 +74,7 @@
    ;; from caveman2-widgets.navigation-widget
    :<navigation-widget>
    :current-page
+   :base-path
 
    ;; from caveman2-widgets.helper-macros
    :with-navigation-widget
