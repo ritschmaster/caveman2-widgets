@@ -12,35 +12,7 @@
         :caveman2-widgets.widget
         :caveman2-widgets.document
         :caveman2-widgets.navigation)
-  (:export
-   :with-navigation-widget))
+  ;; (:export
+  ;;  :with-navigation-widget)
+  )
 (in-package :caveman2-widgets.helper-macros)
-
-(defmacro with-navigation-widget ((session-key
-                                   navigation-widget-symbol
-                                   header-widget
-                                   &key
-                                   (base-path "/")
-                                   (kind '<menu-navigation-widget>))
-                                  &rest body)
-  "Macro to use a menu navigation widget very easily. For every different
-SESSION-KEY there will be created a new navigation. Therefore you can
-call this macro everytime you want to modify your navigation widget
-without any headache.
-
-@param navigation-widget-symbol You can access the navigation widget
-inside the macro by giving a symbol and using that symbol afterwards.
-
-@return The RENDER-WIDGET of the navigation-widget"
-  `(progn
-     (make-widget :session '<widget>)
-     (set-widget-for-session ,session-key (make-widget :session
-                                                       ',kind))
-     (let ((,navigation-widget-symbol (get-widget-for-session ,session-key)))
-       (setf (session-tag ,navigation-widget-symbol) ,session-key)
-       (setf (base-path ,navigation-widget-symbol) ,base-path)
-       (when (null (header ,navigation-widget-symbol))
-         (setf (header ,navigation-widget-symbol)
-               ,header-widget))
-       ,@body
-       (render-widget ,navigation-widget-symbol))))

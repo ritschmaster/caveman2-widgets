@@ -348,7 +348,10 @@ A very basic example:
 ;;       (setf (header nav-widget)
 ;;             (make-instance '<header-widget>
 ;;                            :title "Navigation test")))
-;;     (render-widget nav-widget)))
+;;     (render-widget nav-widget))
+;;     ;; The corresponding macros does some other things like defining routes
+;;     ;;  etc too
+;;     )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defroute "/sophisticated/path" ()

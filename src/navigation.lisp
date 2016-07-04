@@ -19,12 +19,15 @@
    :pages
    :current-page
    :base-path
-   :session-tag))
+   :session-tag
+
+   :with-navigation-widget))
 (in-package :caveman2-widgets.navigation)
 
 (defclass <navigation-widget> (<html-document-widget> <widget>)
   ((created-paths
     :initform '()
+    :accessor created-paths
     :allocation :class)
    (pages
     :initform '()
@@ -34,7 +37,7 @@
 and it should look like: (list (list \"pagetitle\" \"uri-path\" <widget>))")
    (current-page
     :initform nil
-    :reader current-page
+    :accessor current-page
     :type 'string
     :documentation "The name for the current page to display.")
    (composite
@@ -87,25 +90,27 @@ that: (list \"pagetitle\" \"uri-path\" <widget-for-pagetitle>)."
           (setf (slot-value this 'pages)
                 (append (slot-value this 'pages)
                         (list item)))
-          (when (null (find (second item)
-                            (slot-value this 'created-paths)
-                            :test #'equal))
-            (setf (slot-value this 'created-paths)
-                  (append (slot-value this 'created-paths)
-                          (list (second item))))
-            (setf (ningle:route *web*
-                                (concatenate 'string
-                                             "/"
-                                             (base-path this)
-                                             "/"
-                                             (second item))
-                                :method :get)
-                  #'(lambda (params)
-                      (declare (ignore params))
-                      (let ((nav-widget (get-widget-for-session (session-tag this))))
-                        (setf (current-page nav-widget) (second item))
-                        (render-widget nav-widget))))
-            (nconc found-widget (list t))))
+          ;; (when (null (find (second item)
+          ;;                   (slot-value this 'created-paths)
+          ;;                   :test #'equal))
+          ;;   (setf (slot-value this 'created-paths)
+          ;;         (append (slot-value this 'created-paths)
+          ;;                 (list (second item))))
+          ;;   (setf (ningle:route *web*
+          ;;                       (concatenate 'string
+          ;;                                    "/"
+          ;;                                    (base-path this)
+          ;;                                    "/"
+          ;;                                    (second item))
+          ;;                       :method :get)
+          ;;         #'(lambda (params)
+          ;;             (declare (ignore params))
+          ;;             (let ((nav-widget (get-widget-for-session (session-tag this))))
+          ;;               (setf (current-page nav-widget) (second item))
+          ;;               (render-widget nav-widget))))
+          ;;   (nconc found-widget (list t)))
+          t
+          )
         nil)))
 
 (defclass <menu-navigation-widget> (<navigation-widget>)
@@ -153,3 +158,59 @@ that: (list \"pagetitle\" \"uri-path\" <widget-for-pagetitle>)."
                   (format ret-val (render-widget (composite this)))))
           str-widget))
   (call-next-method this))
+
+(defmacro with-navigation-widget ((session-key
+                                   navigation-widget-symbol
+                                   header-widget
+                                   &key
+                                   (base-path "/")
+                                   (kind '<menu-navigation-widget>))
+                                  &rest body)
+  "Macro to use a menu navigation widget very easily. For every different
+SESSION-KEY there will be created a new navigation. Therefore you can
+call this macro everytime you want to modify your navigation widget
+without any headache.
+
+@param navigation-widget-symbol You can access the navigation widget
+inside the macro by giving a symbol and using that symbol afterwards.
+
+@return The RENDER-WIDGET of the navigation-widget"
+  `(progn
+     (make-widget :session '<widget>)
+     (flet ((create-navigation ()
+              (set-widget-for-session ,session-key (make-widget :session
+                                                                ',kind))
+              (let ((,navigation-widget-symbol (get-widget-for-session ,session-key)))
+                (setf (session-tag ,navigation-widget-symbol) ,session-key)
+                (setf (base-path ,navigation-widget-symbol) ,base-path)
+                (when (null (header ,navigation-widget-symbol))
+                  (setf (header ,navigation-widget-symbol)
+                        ,header-widget))
+                ,@body
+
+                (render-widget ,navigation-widget-symbol))))
+       (create-navigation)
+       (dolist (page (pages (get-widget-for-session ,session-key)))
+         (when (null (find (second page)
+                           (created-paths (get-widget-for-session ,session-key))
+                           :test #'equal))
+           (setf (created-paths (get-widget-for-session ,session-key))
+                 (append (created-paths (get-widget-for-session ,session-key))
+                         (list (second page))))
+           )
+         (setf (ningle:route *web*
+                             (concatenate 'string
+                                          "/"
+                                          ,base-path
+                                          "/"
+                                          (second page))
+                             :method :get)
+               #'(lambda (params)
+                   (declare (ignore params))
+                   (let ((nav-widget (get-widget-for-session ,session-key)))
+                     (when (null nav-widget)
+                       (create-navigation)
+                       (setf nav-widget (get-widget-for-session ,session-key)))
+                     (setf (current-page nav-widget) (second page))
+                     (render-widget nav-widget))))))
+     (render-widget (get-widget-for-session ,session-key))))
