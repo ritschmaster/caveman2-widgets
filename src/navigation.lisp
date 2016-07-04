@@ -14,7 +14,8 @@
         :caveman2-widgets.callback-widget
         :caveman2-widgets.document)
   (:export
-   :<navigation-widget>
+   :<menu-navigation-widget>
+   :<blank-navigation-widget>
    :pages
    :current-page
    :base-path))
@@ -43,7 +44,11 @@ and it should look like: (list (list \"pagetitle\" \"uri-path\" <widget>))")
     :initarg :base-path
     :accessor base-path
     :documentation "Determines the path for this navigation. It does
-not need an initial or trailing forward slash.")))
+not need an initial or trailing forward slash."))
+  (:documentation "This is an abstract widget which implements all
+  interactions with a navigation but not the RENDER-WIDGET. Please
+  subclass this class as you want (default implementations are
+<MENU-NAVIGATION-WIDGET> and <BLANK-NAVIGATION-WIDGET>."))
 
 (defgeneric (setf current-page) (value this))
 
@@ -58,35 +63,35 @@ not need an initial or trailing forward slash.")))
   (mark-dirty (composite this)))
 
 
-(defmethod render-widget ((this <navigation-widget>))
-  (setf (body this)
-        (let ((str-widget (make-widget :session '<string-widget>))
-              (current-widget nil))
-          (setf (text str-widget)
-                (with-output-to-string (ret-val)
-                  (format ret-val "<ul>")
-                  (dolist (page (pages this))
-                    (format ret-val "<li>")
-                    (format ret-val (render-widget
-                                     (make-link :global (first page)
-                                                #'(lambda ()
-                                                    (setf (current-page this) (second page))
-                                                    (concatenate 'string
-                                                                 (base-path this)
-                                                                 "/"
-                                                                 (second page))))))
-                    (format ret-val "</li>")
-                    (when (string= (second page)
-                                   (current-page this))
-                      (setf current-widget (third page))))
-                  (when (null current-widget)
-                    (setf current-widget (third (first (pages this)))))
-                  (setf (slot-value (composite this) 'widgets)
-                        (list current-widget))
-                  (format ret-val "</ul>")
-                  (format ret-val (render-widget (composite this)))))
-          str-widget))
-  (call-next-method this))
+;; (defmethod render-widget ((this <basic-navigation-widget>))
+;;   (setf (body this)
+;;         (let ((str-widget (make-widget :session '<string-widget>))
+;;               (current-widget nil))
+;;           (setf (text str-widget)
+;;                 (with-output-to-string (ret-val)
+;;                   ;; (format ret-val "<ul>")
+;;                   ;; (dolist (page (pages this))
+;;                   ;;   (format ret-val "<li>")
+;;                   ;;   (format ret-val (render-widget
+;;                   ;;                    (make-link :global (first page)
+;;                   ;;                               #'(lambda ()
+;;                   ;;                                   (setf (current-page this) (second page))
+;;                   ;;                                   (concatenate 'string
+;;                   ;;                                                (base-path this)
+;;                   ;;                                                "/"
+;;                   ;;                                                (second page))))))
+;;                   ;;   (format ret-val "</li>")
+;;                   ;;   (when (string= (second page)
+;;                   ;;                  (current-page this))
+;;                   ;;     (setf current-widget (third page))))
+;;                   ;; (when (null current-widget)
+;;                   ;;   (setf current-widget (third (first (pages this)))))
+;;                   ;; (setf (slot-value (composite this) 'widgets)
+;;                   ;;       (list current-widget))
+;;                   ;; (format ret-val "</ul>")
+;;                   (format ret-val (render-widget (composite this)))))
+;;           str-widget))
+;;   (call-next-method this))
 
 (defmethod find-item ((this <navigation-widget>) (item string))
   "@param item The URI path as string."
@@ -128,3 +133,49 @@ that: (list \"pagetitle\" \"uri-path\" <widget-for-pagetitle>)."
                       (render-widget this)))
             (nconc found-widget (list t))))
         nil)))
+
+(defclass <menu-navigation-widget> (<navigation-widget>)
+  ())
+
+(defmethod render-widget ((this <menu-navigation-widget>))
+  (setf (body this)
+        (let ((str-widget (make-widget :session '<string-widget>))
+              (current-widget nil))
+          (setf (text str-widget)
+                (with-output-to-string (ret-val)
+                  (format ret-val "<ul>")
+                  (dolist (page (pages this))
+                    (format ret-val "<li>")
+                    (format ret-val (render-widget
+                                     (make-link :global (first page)
+                                                #'(lambda ()
+                                                    (setf (current-page this) (second page))
+                                                    (concatenate 'string
+                                                                 (base-path this)
+                                                                 "/"
+                                                                 (second page))))))
+                    (format ret-val "</li>")
+                    (when (string= (second page)
+                                   (current-page this))
+                      (setf current-widget (third page))))
+                  (when (null current-widget)
+                    (setf current-widget (third (first (pages this)))))
+                  (setf (slot-value (composite this) 'widgets)
+                        (list current-widget))
+                  (format ret-val "</ul>")
+                  (format ret-val (render-widget (composite this)))))
+          str-widget))
+  (call-next-method this))
+
+(defclass <blank-navigation-widget> (<navigation-widget>)
+  ())
+
+(defmethod render-widget ((this <blank-navigation-widget>))
+  (setf (body this)
+        (let ((str-widget (make-widget :session '<string-widget>))
+              (current-widget nil))
+          (setf (text str-widget)
+                (with-output-to-string (ret-val)
+                  (format ret-val (render-widget (composite this)))))
+          str-widget))
+  (call-next-method this))

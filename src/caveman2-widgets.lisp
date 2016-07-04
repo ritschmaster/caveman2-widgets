@@ -72,7 +72,8 @@
    :body
 
    ;; from caveman2-widgets.navigation-widget
-   :<navigation-widget>
+   :<menu-navigation-widget>
+   :<blank-navigation-widget>
    :current-page
    :base-path
 

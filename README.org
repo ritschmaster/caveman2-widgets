@@ -335,7 +335,8 @@ A very basic example:
 ;; Usage without the helper macro (not recommended):
 ;; (defroute "/sophisticated/path" ()
 ;;   (make-widget :session '<widget>) ;; init session
-;;   (set-widget-for-session :nav-widget (make-widget :session '<navigation-widget>))
+;;   (set-widget-for-session :nav-widget (make-widget :session
+;;                                                    '<menu-navigation-widget>))
 ;;   (let ((nav-widget (get-widget-for-session :nav-widget)))
 ;;     (setf (base-path nav-widget) "sophisticated/path")
 ;;     (append-item nav-widget
@@ -361,13 +362,17 @@ A very basic example:
                  (list "Second widget" "second" *second-widget*))))
 #+END_SRC
 
+
 If the default navigation object doesn't render as you wish, you can
 subclass it and overwrite the RENDER-WIDGET method. Please notice that
 you can actually very easily adjust the path where the navigation and
 its widgets get rendered. The slot BASE-PATH is created for that.
 
-TODO: split the navigation render in header and content (therefore
-subclassing and overwriting is currently a pain).
+There are two default navigation widgets:
+- <MENU-NAVIGATION-WIDGET> :: A navigation with a menu. You can change
+     the menu appearance with CSS.
+- <BLANK-NAVIGATION-WIDGET> :: A navigation without any menu. It is
+     controlled by the URL only - or by other widgets.
 
 ** Things that happen automatically
 The following things you should keep in mind when using

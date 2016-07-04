@@ -20,7 +20,7 @@
                                    navigation-widget-symbol
                                    header-widget)
                                   &rest body)
-  "Macro to use a navigation widget very easily. For every different
+  "Macro to use a menu navigation widget very easily. For every different
 SESSION-KEY there will be created a new navigation. Therefore you can
 call this macro everytime you want to modify your navigation widget
 without any headache.
@@ -31,7 +31,7 @@ inside the macro by giving a symbol and using that symbol afterwards.
 @return The RENDER-WIDGET of the navigation-widget"
   `(progn
      (make-widget :session '<widget>)
-     (set-widget-for-session ,session-key (make-widget :session '<navigation-widget>))
+     (set-widget-for-session ,session-key (make-widget :session '<menu-navigation-widget>))
      (let ((,navigation-widget-symbol (get-widget-for-session ,session-key)))
        (when (null (header ,navigation-widget-symbol))
          (setf (header ,navigation-widget-symbol)

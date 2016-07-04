@@ -40,15 +40,19 @@
   ())
 
 (defmethod render-widget ((this <js-file>))
-  (concatenate 'string
-               "<script src=\"" (path this) "\" type=\"text/javascript\"></script>"))
+  (with-output-to-string (ret-val)
+    (format ret-val
+            "<script src=\"~a\" type=\"text/javascript\"></script>"
+            (path this))))
 
 (defclass <css-file> (<file>)
   ())
 
 (defmethod render-widget ((this <css-file>))
-  (concatenate 'string
-               "<link rel=\"stylesheet\" href=\"" (path this) "\"></link>"))
+  (with-output-to-string (ret-val)
+    (format ret-val
+            "<link rel=\"stylesheet\" href=\"~a\"></link>"
+            (path this))))
 
 (defclass <header-widget> ()
   ((css-files
