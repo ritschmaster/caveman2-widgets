@@ -19,7 +19,7 @@
    :pages
    :current-page
    :base-path
-   :session-tag   ))
+   :session-tag))
 (in-package :caveman2-widgets.navigation)
 
 (defclass <navigation-widget> (<html-document-widget> <widget>)
@@ -65,37 +65,6 @@ not need an initial or trailing forward slash.")
       (setf (slot-value (composite this) 'widgets)
             (list (third page)))))
   (mark-dirty (composite this)))
-
-
-;; (defmethod render-widget ((this <basic-navigation-widget>))
-;;   (setf (body this)
-;;         (let ((str-widget (make-widget :session '<string-widget>))
-;;               (current-widget nil))
-;;           (setf (text str-widget)
-;;                 (with-output-to-string (ret-val)
-;;                   ;; (format ret-val "<ul>")
-;;                   ;; (dolist (page (pages this))
-;;                   ;;   (format ret-val "<li>")
-;;                   ;;   (format ret-val (render-widget
-;;                   ;;                    (make-link :global (first page)
-;;                   ;;                               #'(lambda ()
-;;                   ;;                                   (setf (current-page this) (second page))
-;;                   ;;                                   (concatenate 'string
-;;                   ;;                                                (base-path this)
-;;                   ;;                                                "/"
-;;                   ;;                                                (second page))))))
-;;                   ;;   (format ret-val "</li>")
-;;                   ;;   (when (string= (second page)
-;;                   ;;                  (current-page this))
-;;                   ;;     (setf current-widget (third page))))
-;;                   ;; (when (null current-widget)
-;;                   ;;   (setf current-widget (third (first (pages this)))))
-;;                   ;; (setf (slot-value (composite this) 'widgets)
-;;                   ;;       (list current-widget))
-;;                   ;; (format ret-val "</ul>")
-;;                   (format ret-val (render-widget (composite this)))))
-;;           str-widget))
-;;   (call-next-method this))
 
 (defmethod find-item ((this <navigation-widget>) (item string))
   "@param item The URI path as string."

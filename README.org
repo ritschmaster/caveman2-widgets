@@ -332,7 +332,7 @@ A very basic example:
     ret))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Usage without the helper macro (not recommended):
+;; Usage without the helper macro (STRONGLY recommended to NOT USE):
 ;; (defroute "/sophisticated/path" ()
 ;;   (make-widget :session '<widget>) ;; init session
 ;;   (set-widget-for-session :nav-widget (make-widget :session
@@ -355,7 +355,13 @@ A very basic example:
   (with-navigation-widget (:nav-widget
                            navigation-widget
                            (make-instance '<header-widget>
-                                          :title "Navigation test"))
+                                          :title "Navigation test")
+                                          :base-path
+                                          "/sophisticated/path" ;; important
+                                          :kind
+                                          <menu-navigation-widget>
+                                          ;; optional - this is default
+                          )
     (setf (base-path navigation-widget) "sophisticated/path")
     (append-item navigation-widget
                  (list "First widget" "first" *first-widget*))
