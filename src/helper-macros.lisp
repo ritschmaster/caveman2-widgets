@@ -33,6 +33,7 @@ inside the macro by giving a symbol and using that symbol afterwards.
      (make-widget :session '<widget>)
      (set-widget-for-session ,session-key (make-widget :session '<menu-navigation-widget>))
      (let ((,navigation-widget-symbol (get-widget-for-session ,session-key)))
+       (setf (session-tag ,navigation-widget-symbol) ,session-key)
        (when (null (header ,navigation-widget-symbol))
          (setf (header ,navigation-widget-symbol)
                ,header-widget))

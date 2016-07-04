@@ -64,6 +64,11 @@
    :<js-file>
    :<css-file>
    :<header-widget>
+   :title
+   :icon-path
+   :charset
+   :other-header-content
+   :session-tag
 
    :<body-widget>
 

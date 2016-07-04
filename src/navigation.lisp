@@ -18,7 +18,8 @@
    :<blank-navigation-widget>
    :pages
    :current-page
-   :base-path))
+   :base-path
+   :session-tag   ))
 (in-package :caveman2-widgets.navigation)
 
 (defclass <navigation-widget> (<html-document-widget> <widget>)
@@ -44,7 +45,10 @@ and it should look like: (list (list \"pagetitle\" \"uri-path\" <widget>))")
     :initarg :base-path
     :accessor base-path
     :documentation "Determines the path for this navigation. It does
-not need an initial or trailing forward slash."))
+not need an initial or trailing forward slash.")
+   (session-tag
+    :initarg :session-tag
+    :accessor session-tag))
   (:documentation "This is an abstract widget which implements all
   interactions with a navigation but not the RENDER-WIDGET. Please
   subclass this class as you want (default implementations are
@@ -129,8 +133,9 @@ that: (list \"pagetitle\" \"uri-path\" <widget-for-pagetitle>)."
                                 :method :get)
                   #'(lambda (params)
                       (declare (ignore params))
-                      (setf (current-page this) (second item))
-                      (render-widget this)))
+                      (let ((nav-widget (get-widget-for-session (session-tag this))))
+                        (setf (current-page nav-widget) (second item))
+                        (render-widget nav-widget))))
             (nconc found-widget (list t))))
         nil)))
 

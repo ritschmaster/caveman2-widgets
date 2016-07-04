@@ -338,6 +338,7 @@ A very basic example:
 ;;   (set-widget-for-session :nav-widget (make-widget :session
 ;;                                                    '<menu-navigation-widget>))
 ;;   (let ((nav-widget (get-widget-for-session :nav-widget)))
+;;     (setf (session-tag nav-widget) :nav-widget)
 ;;     (setf (base-path nav-widget) "sophisticated/path")
 ;;     (append-item nav-widget
 ;;                  (list "First widget" "first" *first-widget*))

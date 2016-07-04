@@ -19,6 +19,7 @@
    :title
    :icon-path
    :charset
+   :other-header-content
 
    :<body-widget>
 
@@ -81,7 +82,10 @@
    (charset
     :initform "utf-8"
     :initarg :charset
-    :accessor charset)))
+    :accessor charset)
+   (other-header-content
+    :initform '()
+    :reader other-header-content)))
 
 (defmethod render-widget ((this <header-widget>))
   (with-output-to-string (ret-val)
@@ -112,6 +116,12 @@
 (defmethod append-item ((this <header-widget>) (item <css-file>))
   (setf (slot-value this 'css-files)
         (append (slot-value this 'css-files)
+                (list item)))  )
+
+(defmethod append-item ((this <header-widget>) (item string))
+  "The given item will be added to the <head> tag as given."
+  (setf (slot-value this 'other-header-content)
+        (append (slot-value this 'other-header-content)
                 (list item))))
 
 (defclass <body-widget> (<widget>)

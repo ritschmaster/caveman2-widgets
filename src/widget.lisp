@@ -205,9 +205,10 @@ can do the following:
 
 (defun set-widget-for-session (session-tag widget &optional (session *session*))
   "Saves a widget in the session variable. This should be considered ONLY for
-session scoped widgets.
+session scoped widgets. Only adds WIDGET if there is no widget at SESSION-TAG
+already.
 
-@return The former value in the SESSION at position SESSION-TAG."
+@return The current value in the SESSION at position SESSION-TAG."
   (declare (keyword session-tag)
            (<widget> widget)
            (hash-table session))
