@@ -156,7 +156,6 @@ inside the macro by giving a symbol and using that symbol afterwards.
 
 @return The RENDER-WIDGET of the navigation-widget"
   `(progn
-     (make-widget :session '<widget>) ;; init session
      (flet ((create-navigation ()
               (set-widget-for-session ,session-key (make-widget :session
                                                                 ',kind))

@@ -157,7 +157,6 @@ An example (with children):
                (render-widget (id-widget this)))) 
 
 (defroute "/" ()
-  (make-widget :session '<widget>) ;; init session
   (set-widget-for-session :session-widget
                           (make-widget :session '<session-widget>))
   (concatenate 'string
@@ -334,7 +333,6 @@ An example:
 (defvar *my-body-widget* (make-widget :global '<my-body-widget>))
 
 (defroute "/mark-dirty-test" ()
-  (make-widget :session '<widget>) ;; init session
   (set-widget-for-session :sessioned-widget (make-widget :session '<sessioned-widget>))
   (render-widget
    (make-instance '<html-document-widget>
@@ -366,7 +364,6 @@ A very basic example:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Usage without the helper macro (STRONGLY recommended to NOT USE):
 ;; (defroute "/sophisticated/path" ()
-;;   (make-widget :session '<widget>) ;; init session
 ;;   (set-widget-for-session :nav-widget (make-widget :session
 ;;                                                    '<menu-navigation-widget>))
 ;;   (let ((nav-widget (get-widget-for-session :nav-widget)))
