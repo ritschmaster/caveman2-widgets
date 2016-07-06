@@ -177,23 +177,30 @@ can do the following:
 (defvar *global-widget-holder*
   (make-instance '<widget-holder>))
 
-(defgeneric make-widget (scope class)
-  (:documentation ""))
-
-(defmethod make-widget ((scope (eql :global)) (class symbol))
-  (let ((ret-val (make-instance class)))
-    (append-item *global-widget-holder* ret-val)
-    ret-val))
-
-(defmethod make-widget ((scope (eql :session)) (class symbol))
-  (let ((holder (gethash :widget-holder *session*))
-        (ret-val (make-instance class)))
-    (when (null holder)
-      (setf holder (make-instance '<widget-holder>))
-      (setf (gethash :widget-holder *session*)
-            holder))
-    (append-item holder ret-val)
-    ret-val))
+(defmacro make-widget (scope class
+                       &rest obj-args)
+  "@param obj-args The parameter which are passed to the constructor for the
+new widget."
+  (print (type-of scope))
+  (print scope)
+  `(cond
+     ((eql ,scope :global)
+      (let ((ret-val (make-instance ,class
+                                    ,@obj-args)))
+        (append-item caveman2-widgets.widget::*global-widget-holder* ret-val)
+        ret-val))
+     ((eql ,scope :session)
+      (let ((holder (gethash :widget-holder *session*))
+            (ret-val (make-instance ,class
+                                    ,@obj-args)))
+        (when (null holder)
+          (setf holder (make-instance '<widget-holder>))
+          (setf (gethash :widget-holder *session*)
+                holder))
+        (append-item holder ret-val)
+        ret-val))
+     (t
+      (error "unsupported scope"))))
 
 (defun set-widget-for-session (session-tag widget &optional (session *session*))
   "Saves a widget in the session variable. This should be considered ONLY for

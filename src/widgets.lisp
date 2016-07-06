@@ -46,3 +46,14 @@
   (with-output-to-string (ret-val)
     (dolist (widget (slot-value this 'widgets))
       (format ret-val (render-widget widget)))))
+
+(defclass <function-widget> (<widget>)
+  ((fn
+    :initform #'(lambda () "")
+    :initarg :function
+    :accessor fn))
+  (:documentation "Uses a fucntion for rendering. The given function
+should return a string which will then be rendered."))
+
+(defmethod render-widget ((this <function-widget>))
+  (funcall (fn this)))

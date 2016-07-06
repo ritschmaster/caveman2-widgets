@@ -100,6 +100,17 @@ A very simple example of what you can do with it:
   "enabled it")
 #+END_SRC
 
+A good practice to create disposable widgets is to mark
+them :GLOBAL. In the following example the widget will be created when
+a user connects and will afterwards immediately be destroyed again by
+the garbage collector.
+#+BEGIN_SRC lisp
+(defroute "/" ()
+  (render-widget
+    (make-widget :global '<string-widget>
+                 :text "Hello world!"))
+#+END_SRC
+
 *** Session scope
 The other option is to use a /session/ scope. This is a bit more
 tricky because all your /session/ widgets must be stored within the
@@ -174,6 +185,9 @@ code organisation. These are:
 - <COMPOSITE-WIDGET> :: Contains multiple widgets which will be
      rendered vertically.
 - <STRING-WIDGET> :: A widget which renders only a string.
+- <FUNCTION-WIDGET> :: A widget which uses a supplied function for
+     rendering. Therefore the supplied function has to return a
+     string!
 
 A simple example:
 #+BEGIN_SRC lisp

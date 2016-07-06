@@ -103,8 +103,7 @@ will be called when the route is accessed.
 (defun make-button (scope label callback)
   "@param callback The callback function for the button. This function
    will be called when the user presses the button."
-  (declare (keyword scope)
-           (string label)
+  (declare (string label)
            (function callback))
   (let ((ret-val (make-widget scope '<button-widget>)))
     (init-callback-widget ret-val
@@ -151,8 +150,7 @@ will be called when the route is accessed.
 
 @param target-foreign-p When the given link redirects absolute (like
 http://...)."
-  (declare (keyword scope)
-           (string label)
+  (declare (string label)
            (function callback))
   (let ((ret-val (make-widget scope '<link-widget>)))
     (init-callback-widget ret-val
