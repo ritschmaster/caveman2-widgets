@@ -19,7 +19,19 @@ You can use caveman2-widgets with Quicklisp!
 If you want to contribute or be always up to date you can clone this
 git-repository into "~/quicklisp/local-projects" or (if you are using
 [[https://github.com/roswell/roswell][Roswell]]) "~/.roswell/local-projects" to QUICKLOAD it.
+** Contributions
+You are very welcomed to contribute to this project! You can contribute by:
+- Using it and spreading the word!
+- Finding flaws and submitting [[https://github.com/ritschmaster/caveman2-widgets/issues][Issues]].
+- Finding flaws and removing them (as [[https://github.com/ritschmaster/caveman2-widgets/pulls][Pull-requests]]).
+- Adding new features (as [[https://github.com/ritschmaster/caveman2-widgets/pulls][Pull-requests]]). Before shooting in the dark
+  create either an [[https://github.com/ritschmaster/caveman2-widgets/issues][Issues]] or mail me. Maybe your feature is on my
+  agenda too.
+- Showing your appreciation through a donation (please mail me for my
+  data).
 
+If you add new features, please document them. Otherwise other
+developers will have a hard time using this framework.
 ** Usage
 *** General 
 The only important thing is to run the function INIT-WIDGETS with an
@@ -195,7 +207,9 @@ An example:
                            "Github"
                            #'(lambda ()
                                (format t "LOG: Link clicked!")
-                               "http://github.com/ritschmaster")))
+                               "http://github.com/ritschmaster")
+                            t ;; The link goes out of this domain
+                            ))
                (render-widget
                 (make-button :global
                              "Button"
@@ -228,7 +242,11 @@ To make your life really easy you can create an entire HTML document.
                                        :title "Widgets test"
 
                                        ;; the icon when this header is used
-                                       :icon-path "/images/icon.png"))
+                                       :icon-path "/images/icon.png"
+
+                                       ;; the following lines will be rendered in the header:
+                                       :other-header-content 
+                                       '("<meta name=\"author\" content=\"Richard Bäck\">"))
 (defvar *root-widget* (make-widget :global '<root-widget>))
 (defvar *otherpage-widget* (make-widget :global '<otherpage-widget>))
 

@@ -65,16 +65,7 @@ the given widget.")))
 (defclass <widget> ()
   ((id
     :initform (symbol-name (gensym))
-    :reader id)
-
-   (api-generated-p
-    :initform (make-hash-table)
-    :accessor api-generated-p
-    :allocation :class
-    :documentation "
-To know if the REST API has been generated yet. This is a hash-table which
-stores a boolean for each derived class. E.g. to check if the API for <widget>
-has been created you can call (gethash '<widget> (api-generated-p this))"))
+    :reader id))
   (:documentation ""))
 
 (defmethod append-item ((this <widget-holder>) (item <widget>))
@@ -113,16 +104,18 @@ accessable URIs for the HTTP methods stored in *rest-methods*.
 The REST can be accessed by the URI /*rest-path*/widget-name"
   (declare (special *web*))
 
-  (when (not (gethash (type-of this) (api-generated-p this)))
-    (let ((rest-path
-           (string-downcase
-            (concatenate 'string
-                         "/"
-                         *rest-path*
-                         "/"
-                         (get-trimmed-class-name this)))))
+  (let ((rest-path
+         (string-downcase
+          (concatenate 'string
+                       "/"
+                       *rest-path*
+                       "/"
+                       (get-trimmed-class-name this)))))
 
-      (dolist (cur-method *rest-methods*)
+    (dolist (cur-method *rest-methods*)
+      (when (null (ningle:route *web*
+                                rest-path
+                                :method cur-method))
         (setf (ningle:route *web*
                             rest-path
                             :method cur-method)
@@ -145,8 +138,7 @@ The REST can be accessed by the URI /*rest-path*/widget-name"
                          found-widget
                          cur-method
                          params)
-                        (throw-code 404)))))))
-    (setf (gethash (type-of this) (api-generated-p this)) t)))
+                        (throw-code 404)))))))))
 
 (defgeneric render-widget (this)
   (:documentation "@return Returns the HTML representation of the

@@ -90,27 +90,7 @@ that: (list \"pagetitle\" \"uri-path\" <widget-for-pagetitle>)."
           (setf (slot-value this 'pages)
                 (append (slot-value this 'pages)
                         (list item)))
-          ;; (when (null (find (second item)
-          ;;                   (slot-value this 'created-paths)
-          ;;                   :test #'equal))
-          ;;   (setf (slot-value this 'created-paths)
-          ;;         (append (slot-value this 'created-paths)
-          ;;                 (list (second item))))
-          ;;   (setf (ningle:route *web*
-          ;;                       (concatenate 'string
-          ;;                                    "/"
-          ;;                                    (base-path this)
-          ;;                                    "/"
-          ;;                                    (second item))
-          ;;                       :method :get)
-          ;;         #'(lambda (params)
-          ;;             (declare (ignore params))
-          ;;             (let ((nav-widget (get-widget-for-session (session-tag this))))
-          ;;               (setf (current-page nav-widget) (second item))
-          ;;               (render-widget nav-widget))))
-          ;;   (nconc found-widget (list t)))
-          t
-          )
+          t)
         nil)))
 
 (defclass <menu-navigation-widget> (<navigation-widget>)
@@ -196,21 +176,27 @@ inside the macro by giving a symbol and using that symbol afterwards.
                            :test #'equal))
            (setf (created-paths (get-widget-for-session ,session-key))
                  (append (created-paths (get-widget-for-session ,session-key))
-                         (list (second page))))
-           )
-         (setf (ningle:route *web*
-                             (concatenate 'string
-                                          "/"
-                                          ,base-path
-                                          "/"
-                                          (second page))
-                             :method :get)
-               #'(lambda (params)
-                   (declare (ignore params))
-                   (let ((nav-widget (get-widget-for-session ,session-key)))
-                     (when (null nav-widget)
-                       (create-navigation)
-                       (setf nav-widget (get-widget-for-session ,session-key)))
-                     (setf (current-page nav-widget) (second page))
-                     (render-widget nav-widget))))))
+                         (list (second page)))))
+         (when (null (ningle:route *web*
+                                   (concatenate 'string
+                                                "/"
+                                                ,base-path
+                                                "/"
+                                                (second page))
+                                   :method :get))
+           (setf (ningle:route *web*
+                               (concatenate 'string
+                                            "/"
+                                            ,base-path
+                                            "/"
+                                            (second page))
+                               :method :get)
+                 #'(lambda (params)
+                     (declare (ignore params))
+                     (let ((nav-widget (get-widget-for-session ,session-key)))
+                       (when (null nav-widget)
+                         (create-navigation)
+                         (setf nav-widget (get-widget-for-session ,session-key)))
+                       (setf (current-page nav-widget) (second page))
+                       (render-widget nav-widget)))))))
      (render-widget (get-widget-for-session ,session-key))))

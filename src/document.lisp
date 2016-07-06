@@ -85,6 +85,7 @@
     :accessor charset)
    (other-header-content
     :initform '()
+    :initarg :other-header-content
     :reader other-header-content)))
 
 (defmethod render-widget ((this <header-widget>))
