@@ -88,6 +88,7 @@
 (in-package :caveman2-widgets)
 
 (defun init-widgets (webapp &key
+                              (port 8080)
                               (javascript-path *javascript-path*)
                               (css-path *css-path*)
                               (rest-path *rest-path*)
@@ -100,6 +101,7 @@
            (string rest-path)
            (string button-call-path)
            (string link-call-path))
+  (setf *port* port)
   (setf *web* webapp)
   (setf *javascript-path* javascript-path)
   (setf *css-path* css-path)

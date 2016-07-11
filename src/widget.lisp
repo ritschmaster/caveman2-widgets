@@ -181,8 +181,6 @@ can do the following:
                        &rest obj-args)
   "@param obj-args The parameter which are passed to the constructor for the
 new widget."
-  (print (type-of scope))
-  (print scope)
   `(cond
      ((eql ,scope :global)
       (let ((ret-val (make-instance ,class

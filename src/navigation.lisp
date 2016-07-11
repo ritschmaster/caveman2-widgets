@@ -14,6 +14,8 @@
         :caveman2-widgets.callback-widget
         :caveman2-widgets.document)
   (:export
+   :*port*
+
    :<menu-navigation-widget>
    :<blank-navigation-widget>
    :pages
@@ -23,6 +25,10 @@
 
    :with-navigation-widget))
 (in-package :caveman2-widgets.navigation)
+
+(defvar *port* nil)
+(defvar *navigation-widgets*
+  (make-array 1 :fill-pointer 0 :adjustable t))
 
 (defclass <navigation-widget> (<html-document-widget> <widget>)
   ((created-paths
@@ -143,7 +149,7 @@ that: (list \"pagetitle\" \"uri-path\" <widget-for-pagetitle>)."
                                    navigation-widget-symbol
                                    header-widget
                                    &key
-                                   (base-path "/")
+                                   (base-path "")
                                    (kind '<menu-navigation-widget>))
                                   &rest body)
   "Macro to use a menu navigation widget very easily. For every different
@@ -154,7 +160,11 @@ without any headache.
 @param navigation-widget-symbol You can access the navigation widget
 inside the macro by giving a symbol and using that symbol afterwards.
 
+@param base-path it is very important that there is NO starting or
+trailing slash in the string! Otherwise it won't work!
+
 @return The RENDER-WIDGET of the navigation-widget"
+  (vector-push-extend base-path *navigation-widgets*)
   `(progn
      (flet ((create-navigation ()
               (set-widget-for-session ,session-key (make-widget :session
@@ -199,3 +209,23 @@ inside the macro by giving a symbol and using that symbol afterwards.
                        (setf (current-page nav-widget) (second page))
                        (render-widget nav-widget)))))))
      (render-widget (get-widget-for-session ,session-key))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; The following statement serves to access the navigation widgets at
+;; least once. This should solve the problem that the navigation paths
+;; are created only when the base path of the navigation was called
+;; first. It therfore calls the base path to tell the navigation to
+;; create the paths!
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(bordeaux-threads:make-thread
+ #'(lambda ()
+     (sleep 10)
+     (loop for i from 0 below (length *navigation-widgets*) do
+          (let ((ret 404))
+            (loop while (/= ret 200) do
+                 (setf ret
+                       (nth-value 1 (drakma:http-request
+                                     (format nil
+                                             "http://localhost:~a/~a"
+                                             *port*
+                                             (elt *navigation-widgets* i))))))))))
