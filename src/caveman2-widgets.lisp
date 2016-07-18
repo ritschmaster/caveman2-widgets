@@ -90,6 +90,7 @@
    :<blank-navigation-widget>
    :current-page
    :base-path
+   :defnav
    :with-navigation-widget
    ))
 (in-package :caveman2-widgets)

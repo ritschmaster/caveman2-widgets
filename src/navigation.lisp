@@ -23,6 +23,7 @@
    :base-path
    :session-tag
 
+   :defnav
    :with-navigation-widget))
 (in-package :caveman2-widgets.navigation)
 
@@ -47,7 +48,7 @@ and it should look like: (list (list \"pagetitle\" \"uri-path\" <widget>))")
     :type 'string
     :documentation "The name for the current page to display.")
    (composite
-    :initform (make-widget :session '<composite-widget>)
+    :initform nil
     :reader composite)
    (base-path
     :initform ""
@@ -108,18 +109,23 @@ that: (list \"pagetitle\" \"uri-path\" <widget-for-pagetitle>)."
               (current-widget nil))
           (setf (text str-widget)
                 (with-output-to-string (ret-val)
-                  (format ret-val "<ul>")
+                  (format ret-val "<ul class=\"navigation-widget-links\">")
                   (dolist (page (pages this))
                     (format ret-val "<li>")
                     (format ret-val (render-widget
                                      (make-widget
-                                      :global '<link-widget>
+                                      :session '<link-widget>
                                       :label (first page)
                                       :callback #'(lambda ()
                                                     (setf (current-page this) (second page))
                                                     (concatenate 'string
-                                                                 (base-path this)
-                                                                 "/"
+                                                                 (subseq
+                                                                  (base-path this) 1)
+                                                                 (if (= (length
+                                                                         (base-path this))
+                                                                        1)
+                                                                     ""
+                                                                     "/")
                                                                  (second page))))))
                     (format ret-val "</li>")
                     (when (string= (second page)
@@ -147,87 +153,83 @@ that: (list \"pagetitle\" \"uri-path\" <widget-for-pagetitle>)."
           str-widget))
   (call-next-method this))
 
-(defmacro with-navigation-widget ((session-key
-                                   navigation-widget-symbol
-                                   header-widget
-                                   &key
-                                   (base-path "")
-                                   (kind '<menu-navigation-widget>))
-                                  &rest body)
-  "Macro to use a menu navigation widget very easily. For every different
-SESSION-KEY there will be created a new navigation. Therefore you can
-call this macro everytime you want to modify your navigation widget
-without any headache.
-
-@param navigation-widget-symbol You can access the navigation widget
-inside the macro by giving a symbol and using that symbol afterwards.
-
-@param base-path it is very important that there is NO starting or
-trailing slash in the string! Otherwise it won't work!
-
-@return The RENDER-WIDGET of the navigation-widget"
-  (vector-push-extend base-path *navigation-widgets*)
+(defmacro defnav (base-path
+                  (header-widget
+                   pages
+                   &key
+                   (kind ''<menu-navigation-widget>)
+                   (session-key :nav-widget)))
+  "@param base-path The path for the navigation. Should have a starting \"/\".
+@param header-widget A <HEADER-WIDGET> for the navigation and it's children.
+@param pages A list of lists."
   `(progn
-     (flet ((create-navigation ()
-              (set-widget-for-session ,session-key (make-widget :session
-                                                                ',kind))
-              (let ((,navigation-widget-symbol (get-widget-for-session ,session-key)))
-                (setf (session-tag ,navigation-widget-symbol) ,session-key)
-                (setf (base-path ,navigation-widget-symbol) ,base-path)
-                (when (null (header ,navigation-widget-symbol))
-                  (setf (header ,navigation-widget-symbol)
-                        ,header-widget))
-                ,@body
+     (when (null (ningle:route *web*
+                               ,base-path
+                               :method :get))
+       (setf (ningle:route *web*
+                           (concatenate 'string
+                                        ,base-path)
+                           :method :get)
+             #'(lambda (params)
+                 (with-html-document (doc
+                                      ,header-widget)
+                   (setf (body doc)
+                         (progn
+                           (when (null (get-widget-for-session ,session-key))
+                             (set-widget-for-session ,session-key (make-widget :session
+                                                                               ,kind))
+                             (let ((navigation-widget (get-widget-for-session ,session-key)))
+                               (setf (slot-value navigation-widget 'composite)
+                                     (make-widget :session '<composite-widget>))
+                               (dolist (page ,pages)
+                                 (append-item navigation-widget
+                                              page))
+                               (setf (session-tag navigation-widget) ,session-key)
+                               (setf (base-path navigation-widget) ,base-path)
+                               (when (null (header navigation-widget))
+                                 (setf (header navigation-widget)
+                                       ,header-widget))))
+                           (get-widget-for-session ,session-key)))))))
+     (dolist (page ,pages)
+       (when (null (ningle:route *web*
+                                 (concatenate 'string
+                                              ,base-path
+                                              (if (= (length ,base-path)
+                                                     1)
+                                                  ""
+                                                  "/")
+                                              (second page))
+                                 :method :get))
+         (setf (ningle:route *web*
+                             (concatenate 'string
+                                          ,base-path
+                                          (if (= (length ,base-path)
+                                                 1)
+                                              ""
+                                              "/")
+                                          (second page))
+                             :method :get)
+               #'(lambda (params)
+                   (with-html-document (doc
+                                        ,header-widget)
+                     (setf (body doc)
+                           (progn
+                             (when (null (get-widget-for-session ,session-key))
+                               (set-widget-for-session ,session-key (make-widget :session
+                                                                                 ,kind))
+                               (let ((navigation-widget (get-widget-for-session ,session-key)))
+                                 (setf (slot-value navigation-widget 'composite)
+                                       (make-widget :session '<composite-widget>))
+                                 (dolist (page ,pages)
+                                   (append-item navigation-widget
+                                                page))
+                                 (setf (session-tag navigation-widget) ,session-key)
+                                 (setf (base-path navigation-widget) ,base-path)
+                                 (when (null (header navigation-widget))
+                                   (setf (header navigation-widget)
+                                         ,header-widget))))
 
-                (render-widget ,navigation-widget-symbol))))
-       (create-navigation)
-       (dolist (page (pages (get-widget-for-session ,session-key)))
-         (when (null (find (second page)
-                           (created-paths (get-widget-for-session ,session-key))
-                           :test #'equal))
-           (setf (created-paths (get-widget-for-session ,session-key))
-                 (append (created-paths (get-widget-for-session ,session-key))
-                         (list (second page)))))
-         (when (null (ningle:route *web*
-                                   (concatenate 'string
-                                                "/"
-                                                ,base-path
-                                                "/"
-                                                (second page))
-                                   :method :get))
-           (setf (ningle:route *web*
-                               (concatenate 'string
-                                            "/"
-                                            ,base-path
-                                            "/"
-                                            (second page))
-                               :method :get)
-                 #'(lambda (params)
-                     (declare (ignore params))
-                     (let ((nav-widget (get-widget-for-session ,session-key)))
-                       (when (null nav-widget)
-                         (create-navigation)
-                         (setf nav-widget (get-widget-for-session ,session-key)))
-                       (setf (current-page nav-widget) (second page))
-                       (render-widget nav-widget)))))))
-     (render-widget (get-widget-for-session ,session-key))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; The following statement serves to access the navigation widgets at
-;; least once. This should solve the problem that the navigation paths
-;; are created only when the base path of the navigation was called
-;; first. It therfore calls the base path to tell the navigation to
-;; create the paths!
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(bordeaux-threads:make-thread
- #'(lambda ()
-     (sleep 10)
-     (loop for i from 0 below (length *navigation-widgets*) do
-          (let ((ret 404))
-            (loop while (/= ret 200) do
-                 (setf ret
-                       (nth-value 1 (drakma:http-request
-                                     (format nil
-                                             "http://localhost:~a/~a"
-                                             *port*
-                                             (elt *navigation-widgets* i))))))))))
+                             (let ((navigation-widget (get-widget-for-session ,session-key)))
+                               (setf (current-page navigation-widget)
+                                     (second page))
+                               navigation-widget))))))))))

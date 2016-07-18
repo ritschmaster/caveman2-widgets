@@ -14,7 +14,12 @@
    :*jquery-cdn-link*
 
    :<js-file>
+   :path
+   :initegrity
+   :crossorigin
+
    :<css-file>
+
    :<header-widget>
    :title
    :icon-path
@@ -37,7 +42,15 @@
   ((path
     :initform (error "Must supply a path to access the file.")
     :initarg :path
-    :reader path)))
+    :reader path)
+   (integrity
+    :initform nil
+    :initarg :initegrity
+    :reader integrity)
+   (crossorigin
+    :initform nil
+    :initarg :crossorigin
+    :reader crossorigin)))
 
 (defclass <js-file> (<file>)
   ())
@@ -149,16 +162,14 @@
                  "</html>")))
 
 (defmacro with-html-document ((document-symbol
+                               header
                                &key
-                               (header (make-instance '<header-widget>))
-                               (kind '<html-document-widget>))
+                               (doc-kind '<html-document-widget>))
                               &rest body)
   "@param document-symbol The symbol name to access the document.
-@param header A <HEADER-WIDGET>.
-@param kind The class which is used as HTML document."
-  `(let ((,document-symbol (make-instance ',kind
-                                          ;; TODO: use ,header
-                                          :header (make-instance '<header-widget>)
-                                          )))
+@param doc-kind The class which is used as HTML document.
+@param header A <HEADER-WIDGET> for this document. "
+  `(let ((,document-symbol (make-instance ',doc-kind
+                                          :header ,header)))
      ,@body
      (render-widget ,document-symbol)))

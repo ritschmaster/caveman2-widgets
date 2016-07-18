@@ -367,45 +367,26 @@ A very basic example:
     (setf (text ret) "<h1>Hello world from second</h1>")
     ret))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Usage without the helper macro (STRONGLY DISCOURAGED TO USE):
-;; (defroute "/sophisticated/path" ()
-;;   (set-widget-for-session :nav-widget (make-widget :session
-;;                                                    '<menu-navigation-widget>))
-;;   (let ((nav-widget (get-widget-for-session :nav-widget)))
-;;     (setf (session-tag nav-widget) :nav-widget)
-;;     (setf (base-path nav-widget) "sophisticated/path")
-;;     (append-item nav-widget
-;;                  (list "First widget" "first" *first-widget*))
-;;     (append-item nav-widget
-;;                  (list "Second widget" "second" *second-widget*))
-;;     (when (null (header nav-widget))
-;;       (setf (header nav-widget)
-;;             (make-instance '<header-widget>
-;;                            :title "Navigation test")))
-;;     (render-widget nav-widget))
-;;     ;; The corresponding macros does some other things like defining routes
-;;     ;;  etc too
-;;     )
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defclass <proxy-widget> (<widget>)
+  ()
+  (:documentation "This class enables session based widgets for a
+navigation."))
 
-(defroute "/sophisticated/path" ()
-  (with-navigation-widget (:nav-widget
-                           navigation-widget
-                           (make-instance '<header-widget>
-                                          :title "Navigation test")
-                                          :base-path
-                                          "/sophisticated/path" ;; important
-                                          :kind
-                                          <menu-navigation-widget>
-                                          ;; optional - this is default
-                          )
-    (append-item navigation-widget
-                 (list "First widget" "first" *first-widget*))
-    (append-item navigation-widget
-                 (list "Second widget" "second" *second-widget*))))
+(defmethod render-widget ((this <proxy-widget>))
+  (set-widget-for-session :string-widget
+                          (make-widget :session '<string-widget>
+                                       :text "hello world"))
+  (render-widget (get-widget-for-session :string-widget)))
+
+(defnav "/sophisticated/path"
+    ((make-instance '<bootstrap-header-widget>
+                    :title "Navigation test")
+     (list
+      (list "First widget" "first" *first-widget*)
+      (list "Second widget" "second" *second-widget*)
+      (list "Third widget" "third" (make-widget :global
+                                                '<proxy-widget>))))) 
 #+END_SRC
-
 
 If the default navigation object doesn't render as you wish, you can
 subclass it and overwrite the RENDER-WIDGET method. Please notice that
@@ -492,10 +473,10 @@ For the <TABLE-Widget> consider the following example:
                                      (list :description "Description"))))
 
 (defroute "/table" ()
-  (with-html-document (doc)
+  (with-html-document (doc
+                       (make-instance '<header-widget>))
     (setf (body doc)
-          *table-widget*)
-    (print (caveman2-widgets.widget::id (body doc)))))
+          *table-widget*)))
 #+END_SRC
 
 The <LIMITED-TABLE-WIDGET> can be used as follows:

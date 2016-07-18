@@ -71,7 +71,7 @@ $(document).ready(function() {
     });
   });
 
-  $('.navigation-widget ul .link-widget a').click(function(e) {
+  $('.navigation-widget-links li a').click(function(e) {
     e.preventDefault();
     var URL = $(this).attr('href');
     $.ajax({
@@ -127,7 +127,6 @@ $(document).ready(function() {
                   tableWidgetsUpdating[tableId] = false;
                 },
                 success: function(data, status, jqXHR) {
-                  console.log(data);
                   tableWidgetsUpdating[tableId] = false;
                 }
               });
