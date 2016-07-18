@@ -22,7 +22,9 @@
    :defroute-static
    :get-trimmed-class-name
    :clean-list-of-broken-links
-   :get-value-for-cons-list))
+   :get-value-for-cons-list
+   :string-case-insensitive=
+   :javascript-available))
 (in-package :caveman2-widgets.util)
 
 (defparameter *application-root* (asdf:system-source-directory :caveman2-widgets))
@@ -89,3 +91,15 @@
 
 (defmethod find-item ((this t) (item t))
   (error "Not supported yet!"))
+
+(defun string-case-insensitive= (str1 str2)
+  (string= (string-downcase str1)
+           (string-downcase str2)))
+
+(defgeneric (setf javascript-available) (value session))
+(defmethod (setf javascript-available) (value (session hash-table))
+  (setf (gethash :javascript-available session) value))
+
+(defgeneric javascript-available (session))
+(defmethod javascript-available ((session hash-table))
+  (gethash :javascript-available session))

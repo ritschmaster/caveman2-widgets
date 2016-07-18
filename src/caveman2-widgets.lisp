@@ -62,6 +62,8 @@
    :get-as-list
    :<table-widget>
    :column-descriptions
+   :progressive-p
+   :default-progressive-load-value
 
    ;; from caveman2-widgets.document
    :*jquery-cdn-link*
@@ -130,4 +132,31 @@
   ;;                  "/widgets.css")
   ;;     (merge-pathnames #P"widgets.css" *js-directory*)
   ;;   *web*)
-  )
+
+  (setf (ningle:route *web*
+                      (concatenate 'string
+                                   "/"
+                                   *rest-path*
+                                   "/"
+                                   *javascript-checker-path*)
+                      :method :get)
+        #'(lambda (params)
+            (if (javascript-available *session*)
+                "true"
+                "false")))
+  (setf (ningle:route *web*
+                      (concatenate 'string
+                                   "/"
+                                   *rest-path*
+                                   "/"
+                                   *javascript-checker-path*)
+                      :method :post)
+        #'(lambda (params)
+            (if (string-case-insensitive=
+                 (cdr
+                  (assoc 'available params
+                         :test #'string-case-insensitive=))
+                 "true")
+                (setf (javascript-available *session*) t)
+                (setf (javascript-available *session*) nil))
+            "")))

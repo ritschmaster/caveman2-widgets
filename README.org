@@ -475,6 +475,7 @@ This section should inform you about keywords in the session variable
 which you should absolutely not modify.
 - :WIDGET-HOLDER
 - :DIRTY-OBJECT-IDS
+- :JAVASCRIPT-AVAILABLE
 
 ** Author
 

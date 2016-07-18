@@ -29,6 +29,7 @@
    :init-mark-dirty
 
    :*rest-path*
+   :*javascript-checker-path*
    :*web*
    :*javascript-path*
    :*widgets-js-filename*
@@ -37,6 +38,7 @@
 (in-package :caveman2-widgets.widget)
 
 (defvar *rest-path* "rest")
+(defvar *javascript-checker-path* "javascript-checker")
 (defvar *rest-methods* '(:get :post :put :patch :delete :head :options))
 (defvar *web* nil
   "An <app>-instance")
@@ -151,7 +153,7 @@ transfer or embedded in another page."))
 (defmethod render-widget :around ((this <widget>))
   (demark-dirty this)
   (with-output-to-string (ret-val)
-    (format ret-val "<div id=\"" (id this) "\" class=\"widget ")
+    (format ret-val "<div id=\"~a\" class=\"widget " (id this))
     (format ret-val (get-trimmed-class-name this))
     (format ret-val "\">")
     (format ret-val (call-next-method this))

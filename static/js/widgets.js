@@ -1,6 +1,21 @@
 $(document).ready(function() {
   var restBaseUrl = "/rest/";
+  var restJavaScriptCheckerUrl = "javascript-checker";
+  var restTableWidgetUrl = "table-widget";
   var dirtyObjectsUrl = "/widgets/dirty";
+
+  $.ajax({
+    url: restBaseUrl + restJavaScriptCheckerUrl,
+    dataType: "json",
+    type: "post",
+    data: {
+      available: "true"
+    },
+    error: function(jqXHR, status, errorMsg) {
+    },
+    success: function(data, status, jqXHR) {
+    }
+  });
 
   var processDirty = function() {
     $.ajax({
@@ -10,7 +25,6 @@ $(document).ready(function() {
       error: function(jqXHR, status, errorMsg) {
       },
       success: function(data, status, jqXHR) {
-        var test = eval(data);
         var dirtyObjectIds = data.dirtyObjects;
         dirtyObjectIds.forEach(function(dirtyObjectId) {
           var dirtyObjectIdTag = '#' + dirtyObjectId;
@@ -71,6 +85,55 @@ $(document).ready(function() {
         var url = data;
         history.pushState(stateObj, title, url);
         processDirty();
+      }
+    });
+  });
+
+  var tableWidgetsUpdating = [];
+  $(window).scroll(function () {
+    $('.table-widget').each(function() {
+      var tableId = $(this).attr('id');
+      if (tableWidgetsUpdating[tableId] != true) {
+        var currentTableLength = $('#' + tableId + ' tr').length;
+        if ($('#' + tableId + ' th').length)
+          currentTableLength--;
+
+        $.ajax({
+          url: restBaseUrl + restTableWidgetUrl,
+          dataType: "html",
+          type: "post",
+          data: {
+            id: tableId,
+            "length_p": "true"
+          },
+          error: function(jqXHR, status, errorMsg) {
+            tableWidgetsUpdating[tableId] = false;
+          },
+          success: function(data, status, jqXHR) {
+            if (currentTableLength < data) {
+              var loadAmount = 10;
+              if (currentTableLength + loadAmount > data)
+                loadAmount = data - currentTableLength;
+              $.ajax({
+                url: restBaseUrl + restTableWidgetUrl,
+                dataType: "html",
+                type: "post",
+                data: {
+                  id: tableId,
+                  already: currentTableLength,
+                  amount: loadAmount
+                },
+                error: function(jqXHR, status, errorMsg) {
+                  tableWidgetsUpdating[tableId] = false;
+                },
+                success: function(data, status, jqXHR) {
+                  console.log(data);
+                  tableWidgetsUpdating[tableId] = false;
+                }
+              });
+            }
+          }
+        });
       }
     });
   });

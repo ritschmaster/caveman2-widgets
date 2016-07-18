@@ -30,7 +30,9 @@
    :<table-item>
    :get-as-list
    :<table-widget>
-   :column-descriptions))
+   :column-descriptions
+   :progressive-p
+   :default-progressive-load-value))
 (in-package :caveman2-widgets.widgets)
 
 (defclass <string-widget> (<widget>)
@@ -94,9 +96,15 @@ the list!"))
 <TABLE-ITEM> objects. It is possible to use a heterogenous list of
 <TABLE-ITEM> objects but it is strongly advised to watch out by doing
 so (accessing not available slots might cause an error!). The producer
-should be able to deliver a specific amount of items too. Consider the
-following lambda as producer:
-(lambda (&key amount)
+should be able to deliver a specific amount of items too (AMOUNT = m,
+ALREADY = n, LENGTH-P = nil => gets items from (m) to (m + n)). To
+know how many items are avaible please supply the key LENGTH-P which
+returns a number when non-nil. Consider the following lambda as
+producer:
+(lambda (&key
+           amount
+           (already 0)
+           (length-p nil))
   (list (make-instance '<table-item>)))")
    (colum-descriptions
     :initform '()
@@ -112,8 +120,11 @@ Example:
  :reader progressive-p
  :documentation "If non-nil the table loads the next items
 progressively when the end of the table/side is reached. This is only
-available if JavaScript is enabled. The non-nil value describes how
-many lines will be delivered on each load."))
+available if JavaScript is enabled.")
+(default-progressive-load-value
+    :initform 10
+  :initarg :default-progressive-load-value
+  :accessor default-progressive-load-value))
 (:documentation "The RENDER-WIDGET-REST method is splitted:
 - GET :: returns the entire widget
 - POST :: returns ARGS lines of the table"))
@@ -136,24 +147,65 @@ accessed. The second value is the header text for the column."
               "<th>~a</th>"
               (second column)))
     (format ret-val "</tr>")
-    (dolist (item (if (null (progressive-p this))
-                      (funcall (producer this))
-                      (funcall (producer this) (progressive-p this))))
-      (format ret-val "<tr>")
-      (dolist (column (column-descriptions this))
-        (format ret-val "<td>~a</td>"
-                (getf (get-as-list item)
-                      (first column))))
-      (format ret-val "</tr>"))
+    (when  (null (javascript-available *session*))
+      (dolist (item (funcall (producer this)))
+        (format ret-val "<tr>")
+        (dolist (column (column-descriptions this))
+          (format ret-val "<td>~a</td>"
+                  (getf (get-as-list item)
+                        (first column))))
+        (format ret-val "</tr>")))
     (format ret-val "</table>")))
 
-(defmethod render-widget-rest ((this <widget>)
-                               (method (eql :get))
-                               (args t))
-  (render-widget this))
+;; (defmethod render-widget-rest ((this <widget>)
+;;                                (method (eql :get))
+;;                                (args t))
+;;   (render-widget this))
 
-(defmethod render-widget-rest ((this <widget>)
-                               (method (eql :post))
-                               (args string))
-  (format t args)
-  (render-widget this))
+(defmethod render-widget-rest ((this <table-widget>)
+                               (method t ;(eql :post)
+                                       )
+                               (args t))
+  "The POST render returns only the table rows.
+
+@param args In the args there must be two specific cons. The first one
+is a cons which describes how many lines to load - this must have the
+accessor AMOUNT. The second cons describes how many lines are already
+loaded. The accessor for this must be ALREADY. If the cons
+'(\"length_p\" . \"true\") is within the args everything else will be
+ignored and the amount of available items will be returned."
+
+
+  (with-output-to-string (ret-val)
+    (if (string-case-insensitive=
+         (cdr
+          (assoc 'length_p args
+                 :test #'string-case-insensitive=))
+         "true")
+        (progn
+          (format ret-val "~a"
+                  (funcall (producer this)
+                           :length-p t)))
+        (progn
+          (dolist (item
+                    (if (null (progressive-p this))
+                        (funcall (producer this))
+                        (funcall (producer this)
+                                 :amount (or (parse-integer
+                                              (cdr
+                                               (assoc 'amount args
+                                                      :test #'string-case-insensitive=))
+                                              :junk-allowed t)
+                                             (default-progressive-load-value this))
+                                 :already (or (parse-integer
+                                               (cdr
+                                                (assoc 'already args
+                                                       :test #'string-case-insensitive=))
+                                               :junk-allowed t)
+                                              0))))
+            (format ret-val "<tr>")
+            (dolist (column (column-descriptions this))
+              (format ret-val "<td>~a</td>"
+                      (getf (get-as-list item)
+                            (first column))))
+            (format ret-val "</tr>"))))))
