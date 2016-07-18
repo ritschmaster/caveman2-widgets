@@ -417,6 +417,91 @@ There are two default navigation widgets:
      the menu appearance with CSS.
 - <BLANK-NAVIGATION-WIDGET> :: A navigation without any menu. It is
      controlled by the URL only - or by other widgets.
+*** Table objects
+You can create a table very simple. Just use the <TABLE-WIDGET> or if
+you want something more sophisticated the <LIMITED-TABLE-WIDGET>. The
+difference between the two is that <TABLE-WIDGET> just displays *all*
+items which are supplied through the PRODUCER function while the
+<LIMITED-TABLE-WIDGET> shows only a window of the available items.
+
+Important for the usage of tables is that you supply a PRODUCER
+function. The function should return a list of <TABLE-ITEM>
+objects. This function can be anything but it has to take the key
+arguments:
+- AMOUNT :: Tells how many items to get
+- ALREADY :: Tells how many items already received
+- LENGTH-P :: A flag which should tell the function to return the
+              available items if active.
+AMOUNT and ALREADY can be seen as synonyms for FROM and TO.
+
+A <TABLE-ITEM> object is needed for tables. The essence of those
+objects is that they can be translated to lists through the generic
+function GET-AS-LIST. Therefore you don't have to subclass
+<TABLE-ITEM> at all just to add an implementation of GET-AS-LIST for
+your used class.
+
+For the <TABLE-Widget> consider the following example:
+#+BEGIN_SRC lisp
+(defclass <my-item> (<table-item>)
+  ((id
+    :initarg :id
+    :reader id)
+   (name
+    :initarg :name
+    :reader name)
+   (description
+    :initarg :description
+    :reader description)))
+
+(defmethod get-as-list ((this <my-item>))
+  (list :id (id this)
+        :name (name this)
+        :description (description this)))
+
+(defun producer (&key
+                   amount
+                   (already 0)
+                   (length-p nil))
+  (if (null length-p)
+      (let ((all '()))
+        (if (null amount)
+            (loop for x from 1 to 1000 do
+                 (setf all
+                       (append all
+                               (list
+                                (make-instance '<my-item>
+                                               :id x
+                                               :name (format nil "~a" x)
+                                               :description (format nil "The ~a. item." x))))))
+            (loop for x from (+ already 1) to (+ already amount) do
+                 (setf all
+                       (append all
+                               (list
+                                (make-instance '<my-item>
+                                               :id x
+                                               :name (format nil "~a" x)
+                                               :description (format nil "The ~a. item." x)))))))
+        all)
+      1000))
+
+(defvar *table-widget*
+  (make-widget :global '<table-widget>
+               :producer 'producer
+               :column-descriptions (list
+                                     (list :name "Name")
+                                     (list :description "Description"))))
+
+(defroute "/table" ()
+  (with-html-document (doc)
+    (setf (body doc)
+          *table-widget*)
+    (print (caveman2-widgets.widget::id (body doc)))))
+#+END_SRC
+
+The <LIMITED-TABLE-WIDGET> can be used as follows:
+#+BEGIN_SRC lisp
+TODO! The <limited-table-widget> is not yet done! 
+#+END_SRC
 
 ** Things that happen automatically
 The following things you should keep in mind when using

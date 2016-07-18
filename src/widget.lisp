@@ -12,6 +12,8 @@
         :caveman2-widgets.util)
   (:export
    :<widget>
+   :render-widget-header
+   :render-widget-body
    :render-widget
    :render-widget-rest
    :make-widget
@@ -144,6 +146,9 @@ The REST can be accessed by the URI /*rest-path*/widget-name"
                          cur-method
                          params)
                         (throw-code 404)))))))))
+
+(defgeneric render-widget-header (this))
+(defgeneric render-widget-body (this))
 
 (defgeneric render-widget (this)
   (:documentation "@return Returns the HTML representation of the

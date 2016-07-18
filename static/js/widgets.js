@@ -91,7 +91,7 @@ $(document).ready(function() {
 
   var tableWidgetsUpdating = [];
   $(window).scroll(function () {
-    $('.table-widget').each(function() {
+    $('.limited-table-widget').each(function() {
       var tableId = $(this).attr('id');
       if (tableWidgetsUpdating[tableId] != true) {
         var currentTableLength = $('#' + tableId + ' tr').length;

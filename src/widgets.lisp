@@ -113,21 +113,7 @@ producer:
     :documentation "This is a list of cons which where the cons is one column. The first value of the cons is the keyword to display. The second value of the cons is the table header for that column. For the header (second value) you can use HTML code!
 
 Example:
-(list (list :firstcolumn \"First column\")) ")
-(progressive-p
- :initform nil
- :initarg :progressive-p
- :reader progressive-p
- :documentation "If non-nil the table loads the next items
-progressively when the end of the table/side is reached. This is only
-available if JavaScript is enabled.")
-(default-progressive-load-value
-    :initform 10
-  :initarg :default-progressive-load-value
-  :accessor default-progressive-load-value))
-(:documentation "The RENDER-WIDGET-REST method is splitted:
-- GET :: returns the entire widget
-- POST :: returns ARGS lines of the table"))
+(list (list :firstcolumn \"First column\")) ")))
 
 (defmethod append-item ((this <table-widget>) (item cons))
   "@param item Must not have more than two values. The first value is
@@ -138,33 +124,61 @@ accessed. The second value is the header text for the column."
         (append (slot-value this 'column-descriptions)
                 item)))
 
-(defmethod render-widget ((this <table-widget>))
+(defmethod render-widget-header ((this <table-widget>))
   (with-output-to-string (ret-val)
-    (format ret-val "<table>")
     (format ret-val "<tr>")
     (dolist (column (column-descriptions this))
       (format ret-val
               "<th>~a</th>"
               (second column)))
-    (format ret-val "</tr>")
-    (when  (null (javascript-available *session*))
-      (dolist (item (funcall (producer this)))
-        (format ret-val "<tr>")
-        (dolist (column (column-descriptions this))
-          (format ret-val "<td>~a</td>"
-                  (getf (get-as-list item)
-                        (first column))))
-        (format ret-val "</tr>")))
+    (format ret-val "</tr>")))
+
+(defmethod render-widget-body ((this <table-widget>))
+  (with-output-to-string (ret-val)
+    (dolist (item (funcall (producer this)))
+      (format ret-val "<tr>")
+      (dolist (column (column-descriptions this))
+        (format ret-val "<td>~a</td>"
+                (getf (get-as-list item)
+                      (first column))))
+      (format ret-val "</tr>"))))
+
+(defmethod render-widget ((this <table-widget>))
+  (with-output-to-string (ret-val)
+    (format ret-val (render-widget-header this))
+    (format ret-val (render-widget-body this))))
+
+(defmethod render-widget :around ((this <table-widget>))
+  (with-output-to-string (ret-val)
+    (format ret-val "<table>")
+    (format ret-val (call-next-method this))
     (format ret-val "</table>")))
 
-;; (defmethod render-widget-rest ((this <widget>)
-;;                                (method (eql :get))
-;;                                (args t))
-;;   (render-widget this))
+(defclass <limited-table-widget> (<table-widget>)
+  ((progressive-p
+    :initform nil
+    :initarg :progressive-p
+    :reader progressive-p
+    :documentation "If non-nil the table loads the next items
+progressively when the end of the table/side is reached. This is only
+available if JavaScript is enabled.")
+   (default-progressive-load-value
+       :initform 10
+     :initarg :default-progressive-load-value
+     :accessor default-progressive-load-value))
+  (:documentation "The RENDER-WIDGET-REST method is splitted:
+- GET :: returns the entire widget
+- POST :: returns ARGS lines of the table"))
 
-(defmethod render-widget-rest ((this <table-widget>)
-                               (method t ;(eql :post)
-                                       )
+(defmethod render-widget ((this <limited-table-widget>))
+  (with-output-to-string (ret-val)
+    (format ret-val (render-widget-header this))
+
+    (when  (null (javascript-available *session*))
+      (format ret-val (render-widget-body this)))))
+
+(defmethod render-widget-rest ((this <limited-table-widget>)
+                               (method (eql :post))
                                (args t))
   "The POST render returns only the table rows.
 
@@ -203,7 +217,6 @@ ignored and the amount of available items will be returned."
                                                        :test #'string-case-insensitive=))
                                                :junk-allowed t)
                                               0))))
-            (format ret-val "<tr>")
             (dolist (column (column-descriptions this))
               (format ret-val "<td>~a</td>"
                       (getf (get-as-list item)
