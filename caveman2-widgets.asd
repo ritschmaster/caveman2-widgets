@@ -26,7 +26,6 @@
                          (:file "widgets")
                          (:file "document")
                          (:file "navigation")
-                         (:file "helper-macros")
                          (:file "caveman2-widgets"))))
   :description "Weblocks like widgets for caveman2."
   :long-description

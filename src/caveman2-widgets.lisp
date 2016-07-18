@@ -14,8 +14,7 @@
         :caveman2-widgets.widgets
         :caveman2-widgets.callback-widget
         :caveman2-widgets.document
-        :caveman2-widgets.navigation
-        :caveman2-widgets.helper-macros)
+        :caveman2-widgets.navigation)
   (:export
    ;; from this package
    :init-widgets
@@ -56,6 +55,14 @@
    :<composite-widget>
    :widgets
 
+   :<function-widget>
+   :fn
+
+   :<table-item>
+   :get-as-list
+   :<table-widget>
+   :column-descriptions
+
    ;; from caveman2-widgets.document
    :*jquery-cdn-link*
 
@@ -74,13 +81,13 @@
    :header
    :body
 
+   :with-html-document
+
    ;; from caveman2-widgets.navigation-widget
    :<menu-navigation-widget>
    :<blank-navigation-widget>
    :current-page
    :base-path
-
-   ;; from caveman2-widgets.helper-macros
    :with-navigation-widget
    ))
 (in-package :caveman2-widgets)

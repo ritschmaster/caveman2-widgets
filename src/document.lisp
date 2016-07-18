@@ -25,7 +25,9 @@
 
    :<html-document-widget>
    :header
-   :body))
+   :body
+
+   :with-html-document))
 (in-package :caveman2-widgets.document)
 
 (defvar *jquery-cdn-link* "https://code.jquery.com/jquery-2.2.2.min.js"
@@ -125,19 +127,14 @@
         (append (slot-value this 'other-header-content)
                 (list item))))
 
-(defclass <body-widget> (<widget>)
-  ())
-
 (defclass <html-document-widget> ()
   ((header
     :initform nil ;; (error "Must supply a <header-widget>.")
     :initarg :header
-    :type '<header-widget>
     :accessor header)
    (body
     :initform nil ;; (error "Must supply a <body-widget>.")
     :initarg :body
-    :type '<body-widget>
     :accessor body))
   (:documentation "The body-widget will be wrapped in a div with the id \"body\" automatically."))
 
@@ -150,3 +147,18 @@
                  rendered-body
                  "</div></body>"
                  "</html>")))
+
+(defmacro with-html-document ((document-symbol
+                               &key
+                               (header (make-instance '<header-widget>))
+                               (kind '<html-document-widget>))
+                              &rest body)
+  "@param document-symbol The symbol name to access the document.
+@param header A <HEADER-WIDGET>.
+@param kind The class which is used as HTML document."
+  `(let ((,document-symbol (make-instance ',kind
+                                          ;; TODO: use ,header
+                                          :header (make-instance '<header-widget>)
+                                          )))
+     ,@body
+     (render-widget ,document-symbol)))
