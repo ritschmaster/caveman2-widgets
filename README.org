@@ -15,6 +15,9 @@ refresh parts of your website, because widgets can do that
 by themselves!
 ** Installation
 You can use caveman2-widgets with Quicklisp!
+#+BEGIN_SRC lisp
+(ql:quickload :caveman2-widgets)
+#+END_SRC
 
 If you want to contribute or be always up to date you can clone this
 git-repository into "~/quicklisp/local-projects" or (if you are using
@@ -168,10 +171,11 @@ An example (with children):
              (render-widget
               (get-widget-for-session :session-widget))
              (render-widget
-              (make-button :global
-                           "Reset session"
-                           #'(lambda ()
-                               (remove-widget-for-session :session-widget))))))
+              (make-widget :global '<button-widget>
+                           :label "Reset session"
+                           :callback #'(lambda ()
+                                         (remove-widget-for-session 
+                                          :session-widget))))))
 
 (defroute "/reset-session" ()
   (remove-widget-for-session :session-widget)
@@ -216,23 +220,23 @@ An example:
 (defroute "/" ()
   (concatenate 'string
                (render-widget
-                (make-link :global
-                           "Github"
-                           #'(lambda ()
+                (make-widget :global '<link-widget>
+                           :label "Github"
+                           :callback #'(lambda ()
                                (format t "LOG: Link clicked!")
                                "http://github.com/ritschmaster")
-                            t ;; The link goes out of this domain
+                            :target-foreign-p t ;; The link goes out of this domain
                             ))
                (render-widget
-                (make-button :global
-                             "Button"
-                             #'(lambda ()
-                                 (format t "LOG: Button clicked!"))))))
+                (make-widget :global '<button-widget>
+                             :label "Button"
+                             :callback #'(lambda ()
+                                           (format t
+                                                   "LOG: Button clicked!"))))))
 #+END_SRC
 
 You can create your own callback widgets too. Just look at the
-<CALLBACK-WIDGET>, <BUTTON-WIDGET> classes and the function
-MAKE-BUTTON for that.
+<CALLBACK-WIDGET>, <BUTTON-WIDGET> classes for that.
 
 *** Use caveman2-widgets for your entire HTML document
 To make your life really easy you can create an entire HTML document.
@@ -310,18 +314,20 @@ An example:
                (render-widget
                 (get-widget-for-session :sessioned-widget))
                (render-widget
-                (make-button
-                 :global "Enable"
-                 #'(lambda ()
+                (make-widget
+                 :global '<button-widget>
+                 :label "Enable"
+                 :callback #'(lambda ()
                      (let ((sessioned-widget
                             (get-widget-for-session :sessioned-widget)))
                        (when sessioned-widget
                          (setf (enabled sessioned-widget) t)
                          (mark-dirty sessioned-widget))))))
                (render-widget
-                (make-button
-                 :global "Disable"
-                 #'(lambda ()
+                (make-widget
+                 :global '<button-widget>
+                 :label "Disable"
+                 :callback #'(lambda ()
                      (let ((sessioned-widget
                             (get-widget-for-session :sessioned-widget)))
                        (when sessioned-widget
@@ -449,8 +455,8 @@ access every widget (and derived widget) very easily with CSS.
 When <HEADER-WIDGET> is used all JavaScript dependencies are added
 automatically. Please notice that these dependecies are needed to
 ensure that the widgets work properly. If you don't want to use
-<HEADER-WIDGET> you have to add jQuery and all the JavaScript Code
-supplied by this caveman2-widgets.
+<HEADER-WIDGET> you have to manually add jQuery and all the JavaScript
+Code supplied/needed by caveman2-widgets.
 
 The routes for the JavaScript files (which have to be included in each
 HTML file) are:
@@ -465,8 +471,8 @@ even break. Most likely all dynamic content just won't work
 (automatically fallback to non-JS)*
 
 *** Session values
-This section should inform you have session keywords which you should
-absolutely not modify.
+This section should inform you about keywords in the session variable
+which you should absolutely not modify.
 - :WIDGET-HOLDER
 - :DIRTY-OBJECT-IDS
 

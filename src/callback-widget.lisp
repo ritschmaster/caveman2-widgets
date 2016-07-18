@@ -19,18 +19,21 @@
    :http-method
 
    :<button-widget>
-   :make-button
    :*button-call-path*
 
    :<link-widget>
-   :make-link
    :*link-call-path*))
 (in-package :caveman2-widgets.callback-widget)
 
 (defclass <callback-widget> (<widget>)
   ((label
     :initform nil
+    :initarg :label
     :reader label)
+   (callback
+    :initform #'(lambda () "")
+    :initarg :callback
+    :documentation "")
    (uri-path
     :initform (error "Must supply an uri-path to access the widget.")
     :initarg :uri-path
@@ -56,26 +59,6 @@ keyword (e.g. :post or :get")))
       (when (null sessioned-widget)
         (throw-code 404)))))
 
-;; (defmethod initialize-instance :around ((this <callback-widget>) &key)
-;;   (store-callback-for-widget (callback this)
-;;                              (uri-path this)))
-
-(defun init-callback-widget (widget label callback http-method)
-  "
-@param callback The callback function for the route. This function
-will be called when the route is accessed.
-
-@param uri-path The path where to access the callback function."
-  (declare (<callback-widget> widget)
-           (string label)
-           (function callback)
-           (keyword http-method))
-  (setf (slot-value widget 'label) label)
-  (setf (ningle:route *web*
-                      (uri-path widget)
-                      :method http-method)
-        callback))
-
 (defvar *button-call-path* "buttons")
 (defvar *input-field-for-old-uri* "oldUri")
 
@@ -84,7 +67,8 @@ will be called when the route is accessed.
   (:default-initargs
    :uri-path ""
     :http-method :post)
-  (:documentation ""))
+  (:documentation "The callback function will be called when the user
+presses the button."))
 
 (defmethod initialize-instance :after ((this <button-widget>) &key)
   (setf (slot-value this 'uri-path)
@@ -92,7 +76,19 @@ will be called when the route is accessed.
                      "/"
                      *button-call-path*
                      "/"
-                     (id this))))
+                     (id this)))
+  (setf (ningle:route *web*
+                      (uri-path this)
+                      :method (http-method this))
+        #'(lambda (params)
+            (test-widget-if-session (widget-scope this)
+                                    (id this))
+            (funcall (slot-value this 'callback))
+            (let ((oldUrl (get-value-for-cons-list
+                           params
+                           *input-field-for-old-uri*)))
+              (when oldUrl
+                (redirect oldUrl))))))
 
 (defmethod render-widget ((this <button-widget>))
   (concatenate 'string
@@ -100,33 +96,19 @@ will be called when the route is accessed.
                "<input type=\"submit\" value=\"" (label this) "\"/>"
                "<input type=\"hidden\" name=\"" *input-field-for-old-uri* "\" value=\"" (getf (request-env *request*) :request-uri) "\" /></form>"))
 
-(defun make-button (scope label callback)
-  "@param callback The callback function for the button. This function
-   will be called when the user presses the button."
-  (declare (string label)
-           (function callback))
-  (let ((ret-val (make-widget scope '<button-widget>)))
-    (init-callback-widget ret-val
-                          label
-                          #'(lambda (params)
-                              (test-widget-if-session scope (id ret-val))
-                              (funcall callback)
-                              (let ((oldUrl (get-value-for-cons-list
-                                             params
-                                             *input-field-for-old-uri*)))
-                                (when oldUrl
-                                  (redirect oldUrl))))
-                          (http-method ret-val))
-    ret-val))
-
 (defvar *link-call-path* "links")
 
 (defclass <link-widget> (<callback-widget>)
-  ()
+  ((target-foreign-p
+    :initform nil
+    :initarg :target-foreign-p
+    :documentation "When the given link redirects absolute (like http://...)."))
   (:default-initargs
    :uri-path ""
     :http-method :get)
-  (:documentation ""))
+  (:documentation "The callback function will be called when the user
+clickes the link. The function must return a string. The returned
+string should be an URL to which the server should redirect."))
 
 (defmethod initialize-instance :after ((this <link-widget>) &key)
   (setf (slot-value this 'uri-path)
@@ -134,39 +116,30 @@ will be called when the route is accessed.
                      "/"
                      *link-call-path*
                      "/"
-                     (id this))))
+                     (id this)))
+  (setf (ningle:route *web*
+                      (uri-path this)
+                      :method (http-method this))
+        #'(lambda (params)
+            (test-widget-if-session (widget-scope this)
+                                    (id this))
+            (redirect (concatenate 'string
+                                   (if (slot-value this 'target-foreign-p)
+                                       ""
+                                       "/")
+                                   (funcall (slot-value this
+                                                        'callback))))))
+  (setf (ningle:route *web*
+                      (uri-path this)
+                      :method :post)
+        #'(lambda (params)
+            (test-widget-if-session (widget-scope this)
+                                    (id this))
+            (funcall (slot-value this
+                                 'callback)))))
 
 (defmethod render-widget ((this <link-widget>))
   (concatenate 'string
                "<a href=\"" (uri-path this) "\">"
                (label this)
-               "</a>"))
-
-(defun make-link (scope label callback &optional (target-foreign-p nil))
-  "@param callback The callback function for the button. This function
-   will be called when the user clickes the link. The function must
-   return a string. The returned string should be an URL to which the
-   server should redirect.
-
-@param target-foreign-p When the given link redirects absolute (like
-http://...)."
-  (declare (string label)
-           (function callback))
-  (let ((ret-val (make-widget scope '<link-widget>)))
-    (init-callback-widget ret-val
-                          label
-                          #'(lambda (params)
-                              (test-widget-if-session scope (id ret-val))
-                              (redirect (concatenate 'string
-                                                     (if target-foreign-p
-                                                         ""
-                                                         "/")
-                                                     (funcall callback))))
-                          (http-method ret-val))
-    (init-callback-widget ret-val
-                          label
-                          #'(lambda (params)
-                              (test-widget-if-session scope (id ret-val))
-                              (funcall callback))
-                          :post)
-    ret-val)) 
+               "</a>")) 

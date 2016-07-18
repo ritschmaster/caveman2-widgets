@@ -112,8 +112,10 @@ that: (list \"pagetitle\" \"uri-path\" <widget-for-pagetitle>)."
                   (dolist (page (pages this))
                     (format ret-val "<li>")
                     (format ret-val (render-widget
-                                     (make-link :global (first page)
-                                                #'(lambda ()
+                                     (make-widget
+                                      :global '<link-widget>
+                                      :label (first page)
+                                      :callback #'(lambda ()
                                                     (setf (current-page this) (second page))
                                                     (concatenate 'string
                                                                  (base-path this)

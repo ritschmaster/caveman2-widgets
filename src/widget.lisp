@@ -16,6 +16,7 @@
    :render-widget-rest
    :make-widget
    :id
+   :widget-scope
 
    :find-item
 
@@ -65,7 +66,9 @@ the given widget.")))
 (defclass <widget> ()
   ((id
     :initform (symbol-name (gensym))
-    :reader id))
+    :reader id)
+   (scope
+    :reader widget-scope))
   (:documentation ""))
 
 (defmethod append-item ((this <widget-holder>) (item <widget>))
@@ -186,6 +189,7 @@ new widget."
       (let ((ret-val (make-instance ,class
                                     ,@obj-args)))
         (append-item caveman2-widgets.widget::*global-widget-holder* ret-val)
+        (setf (slot-value ret-val 'scope) ,scope)
         ret-val))
      ((eql ,scope :session)
       (let ((holder (gethash :widget-holder *session*))
@@ -196,6 +200,7 @@ new widget."
           (setf (gethash :widget-holder *session*)
                 holder))
         (append-item holder ret-val)
+        (setf (slot-value ret-val 'scope) ,scope)
         ret-val))
      (t
       (error "unsupported scope"))))

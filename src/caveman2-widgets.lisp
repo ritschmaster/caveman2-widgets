@@ -45,11 +45,9 @@
 
    :*button-call-path*
    :<button-widget>
-   :make-button
 
    :*link-call-path*
    :<link-widget>
-   :make-link
 
    ;; from caveman2-widgets.widgets
    :<string-widget>
