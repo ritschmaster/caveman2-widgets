@@ -358,14 +358,12 @@ stateful widgets*.
 A very basic example:
 #+BEGIN_SRC lisp
 (defvar *first-widget*
-  (let ((ret (make-widget :global '<string-widget>)))
-    (setf (text ret) "<h1>Hello world from first</h1>")
-    ret))
+  (make-widget :global '<string-widget>
+               :text "<h1>Hello world from first</h1>"))
 
 (defvar *second-widget*
-  (let ((ret (make-widget :global '<string-widget>)))
-    (setf (text ret) "<h1>Hello world from second</h1>")
-    ret))
+  (make-widget :global '<string-widget>
+               :text "<h1>Hello world from second</h1>"))
 
 (defclass <proxy-widget> (<widget>)
   ()

@@ -45,12 +45,12 @@
     :reader path)
    (integrity
     :initform nil
-    :initarg :initegrity
-    :reader integrity)
+    :initarg :integrity
+    :accessor integrity)
    (crossorigin
     :initform nil
     :initarg :crossorigin
-    :reader crossorigin)))
+    :accessor crossorigin)))
 
 (defclass <js-file> (<file>)
   ())
@@ -58,8 +58,13 @@
 (defmethod render-widget ((this <js-file>))
   (with-output-to-string (ret-val)
     (format ret-val
-            "<script src=\"~a\" type=\"text/javascript\"></script>"
-            (path this))))
+            "<script src=\"~a\" type=\"text/javascript\""
+            (path this))
+    (when (integrity this)
+      (format ret-val " integrity=\"~a\"" (integrity this)))
+    (when (crossorigin this)
+      (format ret-val " crossorigin=\"~a\"" (crossorigin this)))
+    (format ret-val "></script>")    ))
 
 (defclass <css-file> (<file>)
   ())
@@ -67,8 +72,13 @@
 (defmethod render-widget ((this <css-file>))
   (with-output-to-string (ret-val)
     (format ret-val
-            "<link rel=\"stylesheet\" href=\"~a\"></link>"
-            (path this))))
+            "<link rel=\"stylesheet\" href=\"~a\""
+            (path this))
+    (when (integrity this)
+      (format ret-val " integrity=\"~a\"" (integrity this)))
+    (when (crossorigin this)
+      (format ret-val " crossorigin=\"~a\"" (crossorigin this)))
+    (format ret-val "></link>")))
 
 (defclass <header-widget> ()
   ((css-files
@@ -152,14 +162,13 @@
   (:documentation "The body-widget will be wrapped in a div with the id \"body\" automatically."))
 
 (defmethod render-widget ((this <html-document-widget>))
-  (let* ((rendered-body (render-widget (body this))))
-    (concatenate 'string
-                 "<html>"
-                 (render-widget (header this))
-                 "<body><div id=\"body\">"
-                 rendered-body
-                 "</div></body>"
-                 "</html>")))
+  (concatenate 'string
+               "<html>"
+               (render-widget (header this))
+               "<body><div id=\"body\">"
+               (render-widget (body this))
+               "</div></body>"
+               "</html>"))
 
 (defmacro with-html-document ((document-symbol
                                header
