@@ -55,6 +55,8 @@
    :<composite-widget>
    :widgets
 
+   :<hcomposite-widget>
+
    :<function-widget>
    :fn
 

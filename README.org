@@ -187,6 +187,8 @@ There are some helpful default widgets which may help you with your
 code organisation. These are:
 - <COMPOSITE-WIDGET> :: Contains multiple widgets which will be
      rendered vertically.
+- <HCOMPOSITE-WIDGET> :: Like the <COMPOSITE-WIDGET> but renders the
+     widgets horizontally.
 - <STRING-WIDGET> :: A widget which renders only a string.
 - <FUNCTION-WIDGET> :: A widget which uses a supplied function for
      rendering. Therefore the supplied function has to return a
@@ -194,20 +196,20 @@ code organisation. These are:
 
 A simple example:
 #+BEGIN_SRC lisp
-(defvar *composite-widget*
-  (let ((composite (make-widget :global '<composite-widget>))
-        (first (make-widget :global '<string-widget>))
-        (second (make-widget :global '<string-widget>)))
-    (setf (text first) "<h1>Composite text</h1>")
-    (setf (text second)
-          "<p>This site contains two string widgets that are wrapped
-in a composite widget</p>")
-    (append-item composite first)
-    (append-item composite second)
-    composite))
-
-(defroute "/composite-test" ()
-  (render-widget *composite-widget*))
+(defroute "/composite" ()
+  (with-html-document (doc
+                       (make-instance '<header-widget>))
+    (setf (body doc)
+          (make-widget :global '<hcomposite-widget>
+                       :widgets (list
+                                 (make-widget :global '<string-widget>
+                                              :text "<h1>Hello from left</h1>")
+                                 (make-widget :global '<function-widget>
+                                              :function
+                                              #'(lambda ()
+                                                  "<h1>Hello from the mid</h1>"))
+                                 (make-widget :global '<string-widget>
+                                              :text "<h1>Hello from right</h1>"))))))
 #+END_SRC
 *** Buttons and links
 You can use buttons and links that call specific functions. When you
@@ -239,7 +241,10 @@ You can create your own callback widgets too. Just look at the
 <CALLBACK-WIDGET>, <BUTTON-WIDGET> classes for that.
 
 *** Use caveman2-widgets for your entire HTML document
-To make your life really easy you can create an entire HTML document.
+To make your life really easy you can create an entire HTML
+document. You can either tinker your own widgets or whatever with the
+<HMTL-DOCUMENT-WIDGET> and the <HEADER-WIDGET> or you can use the
+handy WITH-HTML-DOCUMENT macro.
 
 #+BEGIN_SRC lisp
 (defclass <root-widget> (<body-widget>)
@@ -276,10 +281,10 @@ To make your life really easy you can create an entire HTML document.
                   :header *header-widget*
                   :body *root-widget*)))
 (defroute "/otherpage" ()
-  (render-widget
-   (make-instance '<html-document-widget>
-                  :header *header-widget*
-                  :body *otherpage-widget*)))
+  (with-html-document (doc
+                       *header-widget*)
+    (setf (body doc)
+           *otherpage-widget*)))
 
 #+END_SRC
 
@@ -510,6 +515,10 @@ For each button there will be an URI like "/buttons/BUTTONID". You can
 access buttons via POST only. Links get a URI like "/links/LINKID" and
 can be accessed either by GET (get a redirect to the stored link) or
 by POST (return only the value of the link).
+
+Widgets that are not accessible through the REST:
+- <HTML-DOCUMENT-WIDGET>
+- <HEADER-WIDGET>
 
 *** Encapsulating widgets with divs
 Each widget gets wrapped in a div automatically. Therefore you can

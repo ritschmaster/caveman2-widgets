@@ -24,6 +24,8 @@
    :<composite-widget>
    :widgets
 
+   :<hcomposite-widget>
+
    :<function-widget>
    :fn
 
@@ -61,6 +63,23 @@
   (with-output-to-string (ret-val)
     (dolist (widget (slot-value this 'widgets))
       (format ret-val (render-widget widget)))))
+
+(defclass <hcomposite-widget> (<composite-widget>)
+  ()
+  (:documentation "This is a Horizontal composite widget. Therefore it
+is essentially the same as the <COMPOSITE-WIDGET> with the
+difference that is displays its widgets horizontally. "))
+
+(defmethod render-widget ((this <hcomposite-widget>))
+  (with-output-to-string (ret-val)
+    (format ret-val "<div style=\"background-color;overflow:hidden\">
+<div style=\"overflow:hidden\">")
+    (dolist (widget (slot-value this 'widgets))
+      (format ret-val "<div class=\"item\" style=\"float:left\">")
+      (format ret-val (render-widget widget))
+      (format ret-val "</div>"))
+    (format ret-val "</div>
+</div>")))
 
 (defclass <function-widget> (<widget>)
   ((fn
