@@ -50,7 +50,7 @@
   ((widgets
     :initform '()
     :initarg :widgets
-    :reader widgets)))
+    :accessor widgets)))
 
 (defmethod append-item ((this <composite-widget>) (item <widget>))
   (setf

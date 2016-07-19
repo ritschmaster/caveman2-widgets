@@ -117,7 +117,9 @@
   (with-output-to-string (ret-val)
     (format ret-val "<head>")
 
-    (format ret-val "<title>~a</title>" (or (title this) ""))
+    (format ret-val "<title>~a</title>"
+            (if (title this)
+                (funcall +translate+ (title this))))
     (format ret-val "<meta charset=\"~a\">" (charset this))
     (when (icon-path this)
       (format ret-val "<link href=\"~a\" type=\"image/~a\" rel=\"icon\">"
