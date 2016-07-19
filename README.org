@@ -486,7 +486,30 @@ The <LIMITED-TABLE-WIDGET> can be used as follows:
 #+BEGIN_SRC lisp
 TODO! The <limited-table-widget> is not yet done! 
 #+END_SRC
+*** Translations
+Most strings that are rendered for a human readable get translated
+through a special function. You can specify you own translation
+function by passing it to INIT-WIDGETS as :TRANSLATION-FUNCTION. The
+function header should look like this:
+#+BEGIN_SRC lisp
+(defvar *my-translation-function*
+         #'(lambda (text
+                     &key
+                       plural-p
+                       genitive-form-p
+                       items-count
+                       accusative-form-p
+                       language
+                     &allow-other-keys)
+             text))
+#+END_SRC
 
+Strings that are translated:
+- The page names of a navigation
+
+Strings that are definitely *not* translated:
+- The TEXT of a <STRING-WIDGET>
+- The return value of a <FUNCTION-WIDGET>
 ** Things that happen automatically
 The following things you should keep in mind when using
 caveman2-widgets.

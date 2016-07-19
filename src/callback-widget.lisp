@@ -93,7 +93,7 @@ presses the button."))
 (defmethod render-widget ((this <button-widget>))
   (concatenate 'string
                "<form method=\"post\" action=\"" (uri-path this) "\">"
-               "<input type=\"submit\" value=\"" (label this) "\"/>"
+               "<input type=\"submit\" value=\"" (funcall +translate+ (label this)) "\"/>"
                "<input type=\"hidden\" name=\"" *input-field-for-old-uri* "\" value=\"" (getf (request-env *request*) :request-uri) "\" /></form>"))
 
 (defvar *link-call-path* "links")
@@ -141,5 +141,5 @@ string should be an URL to which the server should redirect."))
 (defmethod render-widget ((this <link-widget>))
   (concatenate 'string
                "<a href=\"" (uri-path this) "\">"
-               (label this)
+               (funcall +translate+ (label this))
                "</a>")) 

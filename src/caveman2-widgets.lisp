@@ -99,6 +99,7 @@
 
 (defun init-widgets (webapp &key
                               (port 8080)
+                              (translation-function +translate+)
                               (javascript-path *javascript-path*)
                               (css-path *css-path*)
                               (rest-path *rest-path*)
@@ -112,6 +113,7 @@
            (string button-call-path)
            (string link-call-path))
   (setf *port* port)
+  (setf +translate+ translation-function)
   (setf *web* webapp)
   (setf *javascript-path* javascript-path)
   (setf *css-path* css-path)

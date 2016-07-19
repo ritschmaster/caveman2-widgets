@@ -10,6 +10,7 @@
   (:use :cl
         :caveman2)
   (:export
+   :+translate+
    :*application-root*
    :*static-directory*
    :*js-directory*
@@ -31,6 +32,24 @@
 (defparameter *static-directory* (merge-pathnames #P"static/" *application-root*))
 (defparameter *js-directory* (merge-pathnames #P"js/" *static-directory*))
 (defparameter *css-directory* (merge-pathnames #P"css/" *static-directory*))
+
+(defvar +translate+ #'(lambda (text
+                          &key
+                            plural-p
+                            genitive-form-p
+                            items-count
+                            accusative-form-p
+                            language
+                            &allow-other-keys)
+                        text)
+  "This should be a function which should translate a given text. You can modify
+ it to your needs. By default this function does nothing.
+
+@param plural-p
+@param genitive-form-p
+@param items-count
+@param accusative-form-p
+@param language")
 
 (defun get-trimmed-class-name (obj)
   (let ((class-name (symbol-name (type-of obj))))
