@@ -62,7 +62,8 @@
 (defmethod render-widget ((this <composite-widget>))
   (with-output-to-string (ret-val)
     (dolist (widget (slot-value this 'widgets))
-      (format ret-val (render-widget widget)))))
+      (format ret-val "<div class=\"item\">~a</div>"
+              (render-widget widget)))))
 
 (defclass <hcomposite-widget> (<composite-widget>)
   ()
