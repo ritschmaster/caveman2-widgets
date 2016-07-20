@@ -211,8 +211,7 @@ A simple example:
                                  (make-widget :global '<string-widget>
                                               :text "<h1>Hello from right</h1>"))))))
 #+END_SRC
-*** Buttons and links
-    <<sec:ButtonsAndLinks>>
+*** Buttons and links 
 You can use buttons and links that call specific functions. When you
 create a button/link only for a session the created route will be
 guarded. Therefore only the user with the associated route may
@@ -223,6 +222,12 @@ access buttons via POST only. Links get a URI like "/links/LINKID" and
 can be accessed either by GET (get a redirect to the stored link) or
 by POST (return only the value of the link). In any case the callback
 function gets called - please keep that in mind.
+
+If the return value of the link matches the current path then the side
+will be reloaded entirely or, if JavaScript is enabled, the dirty
+widgets will be reloaded. Please leave out the starting "/" If you
+want to address a target on the localhost. E.g. you are on the page
+"/test", then return "test" if you want to stay on it.
 
 An example:
 #+BEGIN_SRC lisp
@@ -557,8 +562,8 @@ can access.
   (render-widget this))
 #+END_SRC
 
-Buttons and Links are not accessed through the /rest/ path (see
-[[sec:ButtonsAndLinks]]).
+Buttons and Links are not accessed through the /rest/ path (see the
+section above).
 
 Widgets that are not accessible through the REST:
 - <HTML-DOCUMENT-WIDGET>

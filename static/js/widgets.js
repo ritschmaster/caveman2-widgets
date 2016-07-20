@@ -4,6 +4,75 @@ $(document).ready(function() {
   var restTableWidgetUrl = "table-widget";
   var dirtyObjectsUrl = "/widgets/dirty";
 
+  /**
+   * This function must be called each time HTML code is changed
+   * within the document. Otherwise the buttons, links etc. won't do
+   * what they are supposed to do.
+   *
+   * @param context The newly added HTML. Default the context is the
+   * entire context. Only use 'document' once - when the page is
+   * loaded initially.
+   */
+  function registerOperationsOnTags(context=document) {
+    $('form', context).submit(function(e) {
+      e.preventDefault();
+
+      var parent = $(this).parent();
+
+      if (parent.attr("class").indexOf("button-widget")) {
+        var action = $(this).attr('action');
+        $.ajax({
+          url: action,
+          type: "post"
+        }).done(function(data) {
+          processDirty();
+        });
+      }
+    });
+
+    $('.navigation-widget-links li a', context).click(function(e) {
+      e.preventDefault();
+      var URL = $(this).attr('href');
+      $.ajax({
+        url: URL,
+        type: "POST",
+        error: function(jqXHR, status, errorMsg) {
+        },
+        success: function(data, status, jqXHR) {
+          var stateObj = { };
+          var title = data;
+          var url = data;
+          history.pushState(stateObj, title, url);
+          processDirty();
+        }
+      });
+    });
+
+    $('.link-widget a', context).click(function(e) {
+      e.preventDefault();
+      var URL = $(this).attr('href');
+      $.ajax({
+        url: URL,
+        type: "POST",
+        error: function(jqXHR, status, errorMsg) {
+        },
+        success: function(data, status, jqXHR) {
+          var stateObj = { };
+          var title = data;
+          var url = data;
+          if (("/" + url) == window.location.pathname) {
+
+          } else {
+            window.location.href = url;
+          }
+          processDirty();
+        }
+      });
+    });
+  }
+
+  registerOperationsOnTags();
+
   $.ajax({
     url: restBaseUrl + restJavaScriptCheckerUrl,
     dataType: "json",
@@ -48,6 +117,7 @@ $(document).ready(function() {
               }
               dirtyHtml.empty();
               dirtyHtml.append(parsedHtml);
+              registerOperationsOnTags(parsedHtml);
             }
           });
         });
@@ -58,36 +128,6 @@ $(document).ready(function() {
   setInterval(function() {
     processDirty();
   }, 10000);
-
-  $('.button-widget form').submit(function(e) {
-    e.preventDefault();
-
-    var action = $(this).attr('action');
-    $.ajax({
-      url: action,
-      type: "post"
-    }).done(function(data) {
-      processDirty();
-    });
-  });
-
-  $('.navigation-widget-links li a').click(function(e) {
-    e.preventDefault();
-    var URL = $(this).attr('href');
-    $.ajax({
-      url: URL,
-      type: "POST",
-      error: function(jqXHR, status, errorMsg) {
-      },
-      success: function(data, status, jqXHR) {
-        var stateObj = { };
-        var title = data;
-        var url = data;
-        history.pushState(stateObj, title, url);
-        processDirty();
-      }
-    });
-  });
 
   var tableWidgetsUpdating = [];
   $(window).scroll(function () {
