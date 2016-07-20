@@ -41,6 +41,7 @@
    :init-callback-widget
    :label
    :uri-path
+   :classes
 
    :*button-call-path*
    :<button-widget>
@@ -84,6 +85,7 @@
    :<html-document-widget>
    :header
    :body
+   :bottom
 
    :with-html-document
 

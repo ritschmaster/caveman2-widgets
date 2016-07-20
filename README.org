@@ -212,10 +212,17 @@ A simple example:
                                               :text "<h1>Hello from right</h1>"))))))
 #+END_SRC
 *** Buttons and links
+    <<sec:ButtonsAndLinks>>
 You can use buttons and links that call specific functions. When you
 create a button/link only for a session the created route will be
 guarded. Therefore only the user with the associated route may
 actually access his button.
+
+For each button there will be an URI like "/buttons/BUTTONID". You can
+access buttons via POST only. Links get a URI like "/links/LINKID" and
+can be accessed either by GET (get a redirect to the stored link) or
+by POST (return only the value of the link). In any case the callback
+function gets called - please keep that in mind.
 
 An example:
 #+BEGIN_SRC lisp
@@ -534,10 +541,8 @@ can access.
   (render-widget this))
 #+END_SRC
 
-For each button there will be an URI like "/buttons/BUTTONID". You can
-access buttons via POST only. Links get a URI like "/links/LINKID" and
-can be accessed either by GET (get a redirect to the stored link) or
-by POST (return only the value of the link).
+Buttons and Links are not accessed through the /rest/ path (see
+[[sec:ButtonsAndLinks]]).
 
 Widgets that are not accessible through the REST:
 - <HTML-DOCUMENT-WIDGET>

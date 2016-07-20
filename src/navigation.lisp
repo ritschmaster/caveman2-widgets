@@ -158,6 +158,7 @@ that: (list \"pagetitle\" \"uri-path\" <widget-for-pagetitle>)."
                    pages
                    &key
                    (kind ''<menu-navigation-widget>)
+                   (bottom-widget nil)
                    (session-key :nav-widget)))
   "@param base-path The path for the navigation. Should have a starting \"/\".
 @param header-widget A <HEADER-WIDGET> for the navigation and it's children.
@@ -189,7 +190,9 @@ that: (list \"pagetitle\" \"uri-path\" <widget-for-pagetitle>)."
                                (when (null (header navigation-widget))
                                  (setf (header navigation-widget)
                                        ,header-widget))))
-                           (get-widget-for-session ,session-key)))))))
+                           (get-widget-for-session ,session-key)))
+                   (setf (bottom doc)
+                         ,bottom-widget)))))
      (dolist (page ,pages)
        (when (null (ningle:route *web*
                                  (concatenate 'string
@@ -232,4 +235,6 @@ that: (list \"pagetitle\" \"uri-path\" <widget-for-pagetitle>)."
                              (let ((navigation-widget (get-widget-for-session ,session-key)))
                                (setf (current-page navigation-widget)
                                      (second page))
-                               navigation-widget))))))))))
+                               navigation-widget)))
+                     (setf (bottom doc)
+                           ,bottom-widget))))))))

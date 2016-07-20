@@ -31,6 +31,7 @@
    :<html-document-widget>
    :header
    :body
+   :bottom
 
    :with-html-document))
 (in-package :caveman2-widgets.document)
@@ -160,17 +161,26 @@
    (body
     :initform nil ;; (error "Must supply a <body-widget>.")
     :initarg :body
-    :accessor body))
+    :accessor body)
+   (bottom
+    :initform nil
+    :initarg :bottom
+    :accessor bottom))
   (:documentation "The body-widget will be wrapped in a div with the id \"body\" automatically."))
 
 (defmethod render-widget ((this <html-document-widget>))
-  (concatenate 'string
-               "<html>"
-               (render-widget (header this))
-               "<body><div id=\"body\">"
-               (render-widget (body this))
-               "</div></body>"
-               "</html>"))
+  (with-output-to-string (ret-val)
+    (format ret-val "<html>~a
+<body>
+<div id=\"body\">~a</div>
+<div id=\"bottom\">~a</div>
+</body>
+</html>"
+            (render-widget (header this))
+            (render-widget (body this))
+            (if (bottom this)
+                (render-widget (bottom this))
+                ""))))
 
 (defmacro with-html-document ((document-symbol
                                header

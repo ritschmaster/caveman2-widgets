@@ -42,7 +42,7 @@ $(document).ready(function() {
             error: function(jqXHR, status, errorMsg) {
             },
             success: function(dirtyData, dirtyStatus, dirtyJqXHR) {
-              var parsedHtml = $.parseHTML(dirtyData);
+              var parsedHtml = $.parseHTML(dirtyData, document, true);
               if (dirtyData.indexOf(dirtyObjectId)) {
                 parsedHtml = $(parsedHtml).children();
               }

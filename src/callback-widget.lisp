@@ -17,6 +17,7 @@
    :label
    :uri-path
    :http-method
+   :classes
 
    :<button-widget>
    :*button-call-path*
@@ -44,7 +45,11 @@
     :initarg :http-method
     :reader http-method
     :documentation "This slot should be one of the HTTP methods as
-keyword (e.g. :post or :get")))
+keyword (e.g. :post or :get")
+   (classes
+    :initform nil
+    :initarg :classes
+    :accessor classes)))
 
 (defun test-widget-if-session (scope widget-id &optional (session *session*))
   (declare (keyword scope)
@@ -91,10 +96,16 @@ presses the button."))
                 (redirect oldUrl))))))
 
 (defmethod render-widget ((this <button-widget>))
-  (concatenate 'string
-               "<form method=\"post\" action=\"" (uri-path this) "\">"
-               "<input type=\"submit\" value=\"" (funcall +translate+ (label this)) "\"/>"
-               "<input type=\"hidden\" name=\"" *input-field-for-old-uri* "\" value=\"" (getf (request-env *request*) :request-uri) "\" /></form>"))
+  (with-output-to-string (ret-val)
+    (format ret-val "<form method=\"post\" action=\"~a\">"
+            (uri-path this))
+    (format ret-val "<button type=\"submit\" class=\"~a\">~a</button>"
+            (or (classes this) "")
+            (funcall +translate+ (label this)))
+    (format ret-val "<input type=\"hidden\" name=\"~a\" value=\"~a\" />
+</form>"
+            *input-field-for-old-uri*
+            (getf (request-env *request*) :request-uri))))
 
 (defvar *link-call-path* "links")
 
