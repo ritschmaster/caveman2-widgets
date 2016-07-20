@@ -18,8 +18,10 @@
   (:export
    ;; from this package
    :init-widgets
+   :*init-widgets-hooks*
 
    ;; from caveman2-widgets.util
+   :defroute-static
    :append-item
    :delete-item
    :find-item
@@ -99,6 +101,12 @@
    ))
 (in-package :caveman2-widgets)
 
+(defvar *init-widgets-hooks* '()
+  "This variable holds a list of functions which will be called when
+INIT-WIDGETS is evaluated. You add any function you like but the
+main idea was to add functions from caveman2-widgets based
+libraries/applications that need those variables at compile time.")
+
 (defun init-widgets (webapp &key
                               (port 8080)
                               (translation-function +translate+)
@@ -129,8 +137,10 @@
   (defroute-static
       (concatenate 'string
                    *javascript-path*
+                   "/"
                    *widgets-js-filename*)
-      (merge-pathnames #P"widgets.js" *js-directory*)
+      (merge-pathnames (pathname *widgets-js-filename*)
+                       *js-directory*)
     *web*
     "text/javascript; charset=utf-8")
   ;; (defroute-static
@@ -166,4 +176,7 @@
                  "true")
                 (setf (javascript-available *session*) t)
                 (setf (javascript-available *session*) nil))
-            "")))
+            ""))
+
+  (dolist (fn *init-widgets-hooks*)
+    (funcall fn)))

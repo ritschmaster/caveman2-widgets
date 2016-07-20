@@ -517,6 +517,22 @@ Strings that are translated:
 Strings that are definitely *not* translated:
 - The TEXT of a <STRING-WIDGET>
 - The return value of a <FUNCTION-WIDGET>
+*** Development hooks
+In case you want to do things at compile time (e.g. calling DEFROUTE)
+whe INIT-WIDGETS is evaluated there is the variable
+*INIT-WIDGETS-HOOKS*. Just append new functions as you wish.
+
+#+BEGIN_SRC lisp
+(setf *init-widgets-hooks*
+      (append
+       *init-widgets-hooks*
+       (list
+        #'(lambda ()
+            (defroute "/something" ()
+              ;; Accessing the user supplied <APP> object:
+              (describe caveman2-widgets::*web*)
+              "something")))))
+#+END_SRC
 ** Things that happen automatically
 The following things you should keep in mind when using
 caveman2-widgets.

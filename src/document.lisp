@@ -94,6 +94,7 @@
                     :path
                     (concatenate 'string
                                  *javascript-path*
+                                 "/"
                                  *widgets-js-filename*)))
     :reader js-files)
    (title

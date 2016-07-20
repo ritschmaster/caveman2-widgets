@@ -52,7 +52,7 @@
   "/widgets/css"
   "An absolute route where caveman2-widgets' CSS files can be accessed.")
 
-(defvar *widgets-js-filename* "/widgets.js"
+(defvar *widgets-js-filename* "widgets.js"
   "The filename of the JavaScript file which manages all standard widget
 functionality.")
 

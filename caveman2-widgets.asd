@@ -11,7 +11,7 @@
 (in-package :caveman2-widgets-asd)
 
 (defsystem caveman2-widgets
-  :version "0.4"
+  :version "0.5"
   :author "Richard Paul Bäck"
   :license "LLGPL"
   :depends-on (:trivial-garbage
