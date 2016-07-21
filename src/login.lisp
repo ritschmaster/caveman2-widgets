@@ -25,7 +25,9 @@
 
    :<login-widget>
    :authenticator
-   :logout-button))
+   :logout-button
+
+   :protect-widget))
 (in-package :caveman2-widgets.login)
 
 (defvar *login-authentication-keyword*
@@ -47,7 +49,14 @@ indicated that a session holder is logged in (or not).")
   ((authenticator
     :initarg :authenticator
     :reader authenticator
-    :initform #'(lambda () nil))
+    :initform #'(lambda (user password) nil)
+    :documentation "Must be a function that takes two parameters. The
+first is the username and the second is the password.")
+   (login-failed
+    :initform nil
+    :accessor login-failed
+    :documentation "For internal use only. This slot is used to
+indicate that the login procedure did not work.")
    (logout-button
     :initform
     (make-widget
@@ -62,11 +71,11 @@ indicated that a session holder is logged in (or not).")
 (defmethod render-widget ((this <login-widget>))
   (with-output-to-string (ret-val)
     (if (logged-in *session*)
-        (with-output-to-string (ret-val)
+        (progn
           (format ret-val (call-next-method this))
           (format ret-val (render-widget
                            (logout-button this))))
-        (with-output-to-string (ret-val)
+        (progn
           (format
            ret-val
            (render-widget
@@ -75,6 +84,26 @@ indicated that a session holder is logged in (or not).")
              :label "Login"
              :callback
              #'(lambda ()
-                 (setf (logged-in *session*)
-                       t)
-                 (mark-dirty this)))))))))
+                 (if (funcall (authenticator this)
+                              "user"
+                              "password")
+                     (setf (logged-in *session*)
+                           t)
+                     (setf (login-failed this)
+                           t))
+                 (mark-dirty this)))))
+          (format
+           ret-val "<div class=\"failed-login\">~a</div>"
+           (if (login-failed this)
+               (progn
+                 (setf (login-failed this) nil)
+                 (funcall +translate+ "Your login attempt has failed!"))
+               ""))))))
+
+(defgeneric protect-widget (widget for)
+  (:documentation "@return The WIDGET object."))
+
+(defmethod protect-widget ((widget <widget>) (for (eql :login)))
+  (setf (protected widget)
+        *login-authentication-keyword*)
+  widget)

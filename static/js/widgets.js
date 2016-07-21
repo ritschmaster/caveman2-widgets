@@ -99,7 +99,10 @@ $(document).ready(function() {
           var dirtyObjectIdTag = '#' + dirtyObjectId;
           var dirtyHtml = $(dirtyObjectIdTag);
           var className = dirtyHtml.attr("class").trim();
-          className = className.substring(7 ,className.length);
+          console.log(dirtyHtml.attr("class"));
+          var classNames = className.split(' ');
+          className = classNames[classNames.length - 1];
+          console.log(className);
 
           var dirtyUrl = restBaseUrl + className;
           $.ajax({

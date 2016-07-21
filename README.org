@@ -522,6 +522,67 @@ Strings that are translated:
 Strings that are definitely *not* translated:
 - The TEXT of a <STRING-WIDGET>
 - The return value of a <FUNCTION-WIDGET>
+*** Protecting widgets
+This library also enables you to protect widgets. By default the
+protection is NIL, which means that everybody can access your
+widget. If the protection is non-nil the non-nil value is a keyword
+which refers to the session. So if the session contains this keyword
+as non-nil value the requester can access the widget. Otherwise he is
+denied (throws a 401 code).
+
+The <WIDGET> class holds the PROTECTED slot. This slots value
+indicates the needed token in the session. But caveman2-widgets
+supplies an additional, specific *PROTECT-WIDGET* method which should be
+used. Please implement it as you wish. Default implementations are:
+- FOR = :LOGIN :: Protects the widget by the default login-widget
+
+#+BEGIN_SRC lisp
+(defmethod protect-widget ((widget <widget>) (for (eql :myprotection))
+  (setf (protected widget)
+        :myprotection)
+  widget)
+
+(defvar *specific-protected-widget*
+  (protect-widget
+   (make-widget :global '<string-widget>
+                :text "<h1>This is a protected text</h1>")
+   :myprotection))
+#+END_SRC
+
+an requester's session to have a specific token to
+*** Login
+Protecting certain widgets by a login is very easy.
+
+#+BEGIN_SRC lisp
+(defvar *protected-widget*
+  (protect-widget
+   (make-widget :global '<string-widget>
+                :text "<h1>This is a protected text</h1>")
+   :login))
+
+(defroute "/login" ()
+  (with-html-document (doc
+                       (make-instance '<header-widget>))
+    (setf (body doc)
+          (make-widget
+           :global '<function-widget>
+           :function
+           #'(lambda ()
+               (set-widget-for-session
+                :login-widget
+                (make-widget :session '<login-widget>
+                             :authenticator
+                             #'(lambda (user password)
+                                 (if (and (string= user "ritschmaster")
+                                          (string= password "secret"))
+                                     t
+                                     nil))
+                             :widgets
+                             (list
+                              *protected-widget*)))
+               (render-widget
+                (get-widget-for-session :login-widget)))))))
+#+END_SRC
 *** Development hooks
 In case you want to do things at compile time (e.g. calling DEFROUTE)
 whe INIT-WIDGETS is evaluated there is the variable

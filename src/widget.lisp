@@ -19,6 +19,7 @@
    :make-widget
    :id
    :widget-scope
+   :protected
 
    :find-item
 
@@ -164,7 +165,7 @@ The REST can be accessed by the URI /*rest-path*/widget-name"
                         found-widget
                         (protected found-widget)
                         (not (gethash (protected found-widget) *session*)))
-                       (throw-code 401))
+                       (throw-code 403))
                       ((not found-widget) ;; not found
                        (throw-code 404))
                       (t ;; something bad happened

@@ -29,6 +29,9 @@
 
    ;; from caveman2-widgets.widget
    :<widget>
+   :id
+   :widget-scope
+   :protected
    :make-widget
    :render-widget
    :render-widget-rest
@@ -77,6 +80,8 @@
    :<login-widget>
    :authenticator
    :logout-button
+
+   :protect-widget
 
    ;; from caveman2-widgets.document
    :*jquery-cdn-link*
