@@ -18,8 +18,9 @@ $(document).ready(function() {
     $('.button-widget', context).submit(function(e) {
       e.preventDefault();
 
-      if (! $(this).attr("class").indexOf("form-widget")) {
-        var action = $(this).attr('action');
+      if ($(this).attr("class").indexOf("form-widget") < 0) {
+        var form = $(this).children();
+        var action = $(form).attr('action');
         $.ajax({
           url: action,
           type: "post"
@@ -118,10 +119,8 @@ $(document).ready(function() {
           var dirtyObjectIdTag = '#' + dirtyObjectId;
           var dirtyHtml = $(dirtyObjectIdTag);
           var className = dirtyHtml.attr("class").trim();
-          console.log(dirtyHtml.attr("class"));
           var classNames = className.split(' ');
           className = classNames[classNames.length - 1];
-          console.log(className);
 
           var dirtyUrl = restBaseUrl + className;
           $.ajax({
