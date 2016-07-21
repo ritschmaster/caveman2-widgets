@@ -5,6 +5,18 @@ $(document).ready(function() {
   var dirtyObjectsUrl = "/widgets/dirty";
   var ignoreButtonFieldName = "oldUri";
 
+  function baseName(str) {
+   var base = new String(str).substring(str.lastIndexOf('/') + 1);
+    if(base.lastIndexOf(".") != -1)
+        base = base.substring(0, base.lastIndexOf("."));
+   return base;
+  }
+
+  function nameString(str) {
+    var names = str.split('/');
+    return names[names.length - 1];
+  }
+
   /**
    * This function must be called each time HTML code is changed
    * within the document. Otherwise the buttons, links etc. won't do
@@ -60,8 +72,9 @@ $(document).ready(function() {
         },
         success: function(data, status, jqXHR) {
           var stateObj = { };
-          var title = data;
-          var url = data;
+          var title = nameString(data);
+          var url = baseName(data);
+
           history.pushState(stateObj, title, url);
           processDirty();
         }
