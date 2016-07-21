@@ -74,6 +74,14 @@
    :*link-call-path*
    :<link-widget>
 
+   :<input-field>
+   :input-type
+   :name
+   :value
+
+   :<form-widget>
+   :input-fields
+
    ;; from :caveman2-widgets.login
    :logged-in
 

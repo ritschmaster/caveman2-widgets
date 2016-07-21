@@ -3,6 +3,7 @@ $(document).ready(function() {
   var restJavaScriptCheckerUrl = "javascript-checker";
   var restTableWidgetUrl = "table-widget";
   var dirtyObjectsUrl = "/widgets/dirty";
+  var ignoreButtonFieldName = "oldUri";
 
   /**
    * This function must be called each time HTML code is changed
@@ -14,12 +15,10 @@ $(document).ready(function() {
    * loaded initially.
    */
   function registerOperationsOnTags(context=document) {
-    $('form', context).submit(function(e) {
+    $('.button-widget', context).submit(function(e) {
       e.preventDefault();
 
-      var parent = $(this).parent();
-
-      if (parent.attr("class").indexOf("button-widget")) {
+      if (! $(this).attr("class").indexOf("form-widget")) {
         var action = $(this).attr('action');
         $.ajax({
           url: action,
@@ -28,6 +27,26 @@ $(document).ready(function() {
           processDirty();
         });
       }
+    });
+
+    $('.form-widget', context).submit(function(e) {
+      e.preventDefault();
+      var form = $(this).children();
+      var valueArray = {};
+      $('input', form).each(function(i, obj) {
+        var name = $(obj).attr('name');
+        if (name != ignoreButtonFieldName) {
+          valueArray[name] = $(obj).val();
+        }
+      });
+      var action = $(form).attr('action');
+      $.ajax({
+        url: action,
+        type: "post",
+        data: valueArray
+      }).done(function(data) {
+        processDirty();
+      });
     });
 
     $('.navigation-widget-links li a', context).click(function(e) {

@@ -116,7 +116,7 @@ that: (list \"pagetitle\" \"uri-path\" <widget-for-pagetitle>)."
                                      (make-widget
                                       :session '<link-widget>
                                       :label (first page)
-                                      :callback #'(lambda ()
+                                      :callback #'(lambda (params)
                                                     (setf (current-page this) (second page))
                                                     (concatenate 'string
                                                                  (subseq

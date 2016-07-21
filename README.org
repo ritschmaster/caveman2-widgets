@@ -522,6 +522,40 @@ Strings that are translated:
 Strings that are definitely *not* translated:
 - The TEXT of a <STRING-WIDGET>
 - The return value of a <FUNCTION-WIDGET>
+*** Forms
+Forms can pretty annoying but with the <FORM-WIDGET> you don't have to
+care for anything but for the naming of the inputs. Each <FORM-WIDGET>
+consists for 0 to n <INPUT-FIELD> objects. If you have 0
+<INPUT-FIELDS> it essentially only behaves like a <BUTTON-WIDGET>.
+
+#+BEGIN_SRC lisp
+(defvar *form-widget*
+  (let ((text-field (make-instance '<input-field>
+                                   :input-type "text"
+                                   :name "text"
+                                   :value ""))
+        (password-field (make-instance '<input-field>
+                                       :input-type "password"
+                                       :name "password"
+                                       :value "")))
+    (make-widget :global '<form-widget>
+                 :input-fields (list
+                                text-field
+                                password-field)
+                 :label "Submit"
+                 :callback
+                 #'(lambda (args)
+                     (format t "received values:
+~a
+-------------"
+                             args)))))
+
+(defroute "/form" ()
+  (with-html-document (doc
+                       (make-instance '<header-widget>))
+    (setf (body doc)
+          *form-widget*)))
+#+END_SRC
 *** Protecting widgets
 This library also enables you to protect widgets. By default the
 protection is NIL, which means that everybody can access your

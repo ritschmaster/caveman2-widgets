@@ -13,7 +13,6 @@
         :caveman2-widgets.widget)
   (:export
    :<callback-widget>
-   :init-callback-widget
    :label
    :uri-path
    :http-method
@@ -23,7 +22,15 @@
    :*button-call-path*
 
    :<link-widget>
-   :*link-call-path*))
+   :*link-call-path*
+
+   :<input-field>
+   :input-type
+   :name
+   :value
+
+   :<form-widget>
+   :input-fields))
 (in-package :caveman2-widgets.callback-widget)
 
 (defclass <callback-widget> (<widget>)
@@ -32,7 +39,7 @@
     :initarg :label
     :reader label)
    (callback
-    :initform #'(lambda () "")
+    :initform #'(lambda (args) "")
     :initarg :callback
     :documentation "")
    (uri-path
@@ -88,7 +95,8 @@ presses the button."))
         #'(lambda (params)
             (test-widget-if-session (widget-scope this)
                                     (id this))
-            (funcall (slot-value this 'callback))
+            (funcall (slot-value this 'callback)
+                     params)
             (let ((oldUrl (get-value-for-cons-list
                            params
                            *input-field-for-old-uri*)))
@@ -139,7 +147,8 @@ string should be an URL to which the server should redirect."))
                                        ""
                                        "/")
                                    (funcall (slot-value this
-                                                        'callback))))))
+                                                        'callback)
+                                            params)))))
   (setf (ningle:route *web*
                       (uri-path this)
                       :method :post)
@@ -147,10 +156,61 @@ string should be an URL to which the server should redirect."))
             (test-widget-if-session (widget-scope this)
                                     (id this))
             (funcall (slot-value this
-                                 'callback)))))
+                                 'callback)
+                     params))))
 
 (defmethod render-widget ((this <link-widget>))
   (concatenate 'string
                "<a href=\"" (uri-path this) "\">"
                (funcall +translate+ (label this))
-               "</a>")) 
+               "</a>"))
+
+(defclass <input-field> ()
+  ((input-type
+    :initarg :input-type
+    :initform (error "Must specify an input type.")
+    :reader input-type)
+   (name
+    :initarg :name
+    :initform (error "Must specify a input name.")
+    :reader name)
+   (value
+    :initarg :value
+    :initform (error "Must specify an input value.")
+    :reader value)))
+
+(defmethod render-widget ((this <input-field>))
+  (format nil "<div class=\"input-field\">
+<input type=\"~a\" name=\"~a\" value=\"~a\" />
+</div>"
+          (input-type this)
+          (name this)
+          (value this)))
+
+(defclass <form-widget> (<button-widget>)
+  ((input-fields
+    :initarg :input-fields
+    :initform '()
+    :reader input-fields
+    :documentation "A list of <INPUT-FIELD> objects.")))
+
+(defmethod append-item ((this <form-widget>) (item <input-field>))
+  (setf (slot-value this 'input-fields)
+        (append (input-fields this)
+                (list item))))
+
+(defmethod render-widget ((this <form-widget>))
+  (with-output-to-string (ret-val)
+    (format ret-val "<form method=\"post\" action=\"~a\">"
+            (uri-path this))
+    (dolist (input-field (input-fields this))
+      (format ret-val
+              (render-widget input-field)))
+    (format ret-val "<button type=\"submit\" class=\"~a\">~a</button>"
+            (or (classes this) "")
+            (funcall +translate+ (label this)))
+    (format ret-val "<input type=\"hidden\" name=\"~a\" value=\"~a\" /> 
+</form>"
+            *input-field-for-old-uri*
+            (getf (request-env *request*) :request-uri))))
+

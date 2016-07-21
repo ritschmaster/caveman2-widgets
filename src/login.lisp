@@ -63,7 +63,7 @@ indicate that the login procedure did not work.")
      :session '<button-widget>
      :label "Logout"
      :callback
-     #'(lambda ()
+     #'(lambda (args)
          (setf (logged-in *session*)
                nil)))
     :reader logout-button)))
@@ -83,7 +83,7 @@ indicate that the login procedure did not work.")
              :session '<button-widget>
              :label "Login"
              :callback
-             #'(lambda ()
+             #'(lambda (args)
                  (if (funcall (authenticator this)
                               "user"
                               "password")
