@@ -13,6 +13,7 @@
         :caveman2-widgets.widget
         :caveman2-widgets.widgets
         :caveman2-widgets.callback-widget
+        :caveman2-widgets.login
         :caveman2-widgets.document
         :caveman2-widgets.navigation)
   (:export
@@ -38,19 +39,6 @@
 
    :mark-dirty
 
-   ;; from caveman2-widgets.callback-widget
-   :<callback-widget>
-   :init-callback-widget
-   :label
-   :uri-path
-   :classes
-
-   :*button-call-path*
-   :<button-widget>
-
-   :*link-call-path*
-   :<link-widget>
-
    ;; from caveman2-widgets.widgets
    :<string-widget>
    :text
@@ -69,6 +57,26 @@
    :column-descriptions
    :progressive-p
    :default-progressive-load-value
+
+   ;; from caveman2-widgets.callback-widget
+   :<callback-widget>
+   :init-callback-widget
+   :label
+   :uri-path
+   :classes
+
+   :*button-call-path*
+   :<button-widget>
+
+   :*link-call-path*
+   :<link-widget>
+
+   ;; from :caveman2-widgets.login
+   :logged-in
+
+   :<login-widget>
+   :authenticator
+   :logout-button
 
    ;; from caveman2-widgets.document
    :*jquery-cdn-link*
@@ -115,7 +123,9 @@ libraries/applications that need those variables at compile time.")
                               (rest-path *rest-path*)
                               (button-call-path *button-call-path*)
                               (link-call-path *link-call-path*)
-                              (dirty-objects-uri-path *dirty-objects-uri-path*))
+                              (dirty-objects-uri-path *dirty-objects-uri-path*)
+                              (login-authentication-keyword
+                               *login-authentication-keyword*))
   (declare (<app> webapp)
            (string javascript-path)
            (string css-path)
@@ -131,6 +141,7 @@ libraries/applications that need those variables at compile time.")
   (setf *button-call-path* button-call-path)
   (setf *link-call-path* link-call-path)
   (setf *dirty-objects-uri-path* dirty-objects-uri-path)
+  (setf login-authentication-keyword *login-authentication-keyword*)
 
   (init-mark-dirty *web* *dirty-objects-uri-path*)
 

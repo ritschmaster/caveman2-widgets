@@ -72,7 +72,14 @@ the given widget.")))
     :initform (symbol-name (gensym))
     :reader id)
    (scope
-    :reader widget-scope))
+    :reader widget-scope)
+   (protected
+    :initform nil
+    :initarg :protected
+    :accessor protected
+    :documentation "If NIL the widget is not procted. If non-nil it
+should be a keyword in the session which indicates that the
+requester is authorized to use the widget."))
   (:documentation ""))
 
 (defmethod append-item ((this <widget-holder>) (item <widget>))
@@ -140,12 +147,28 @@ The REST can be accessed by the URI /*rest-path*/widget-name"
                                (find-item session-widget-holder
                                           requested-id)
                                nil))))
-                    (if found-widget
-                        (render-widget-rest
+                    (cond
+                      ((or
+                        (and ;; not proctected
                          found-widget
-                         cur-method
-                         params)
-                        (throw-code 404)))))))))
+                         (not (protected found-widget)))
+                        (and ;; protected and authorized
+                         found-widget
+                         (protected found-widget)
+                         (gethash (protected found-widget) *session*)))
+                       (render-widget-rest
+                        found-widget
+                        cur-method
+                        params))
+                      ((and ;; protected and not authorized
+                        found-widget
+                        (protected found-widget)
+                        (not (gethash (protected found-widget) *session*)))
+                       (throw-code 401))
+                      ((not found-widget) ;; not found
+                       (throw-code 404))
+                      (t ;; something bad happened
+                       (throw-code 417))))))))))
 
 (defgeneric render-widget-header (this))
 (defgeneric render-widget-body (this))

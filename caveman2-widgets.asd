@@ -23,6 +23,7 @@
                          (:file "widget")
                          (:file "callback-widget")
                          (:file "widgets")
+                         (:file "login")
                          (:file "document")
                          (:file "navigation")
                          (:file "caveman2-widgets"))))
