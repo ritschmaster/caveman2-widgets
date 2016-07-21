@@ -8,6 +8,7 @@
 (in-package :cl-user)
 (defpackage caveman2-widgets.util
   (:use :cl
+        :moptilities
         :caveman2)
   (:export
    :+translate+
@@ -51,12 +52,45 @@
 @param accusative-form-p
 @param language")
 
-(defun get-trimmed-class-name (obj)
-  (let ((class-name (symbol-name (type-of obj))))
-    (string-downcase
-     (subseq class-name
-             1
-             (- (length class-name) 1)))))
+(defun get-trimmed-class-name (obj
+                               &key
+                                 (get-all nil))
+  "@param obj The object of which the name is required
+@param get-all-self If non-nil returns the entire hierarchy."
+  (if get-all
+      (let* ((super-classes
+              (superclasses obj
+                            :proper? nil))
+             (to
+              (- (length super-classes)
+                 3))
+             (class-names ""))
+        ;; deleting the standard classes:
+        (setf super-classes
+              (subseq super-classes
+                      0
+                      (if (< to 0)
+                          0
+                          to)))
+        (dolist (super-class
+                  ;; let the first class be the first:
+                  (reverse super-classes))
+          (let ((class-name (string-downcase
+                             (symbol-name
+                              (class-name-of super-class)))))
+            (setf class-names
+                  (concatenate 'string
+                               class-names
+                               (subseq class-name
+                                       1
+                                       (- (length class-name) 1))
+                               " "))))
+        class-names)
+      (let ((class-name (symbol-name (type-of obj))))
+        (string-downcase
+         (subseq class-name
+                 1
+                 (- (length class-name) 1))))))
 
 (defun clean-list-of-broken-links (some-list)
   (declare (list some-list))

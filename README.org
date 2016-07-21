@@ -570,8 +570,10 @@ Widgets that are not accessible through the REST:
 - <HEADER-WIDGET>
 
 *** Encapsulating widgets with divs
-Each widget gets wrapped in a div automatically. Therefore you can
-access every widget (and derived widget) very easily with CSS.
+Each widget gets wrapped in a div automatically. Every widget will get
+its entire class heritage included in the CSS class
+attribute. Therefore you can access every widget (and derived widget)
+very easily with CSS.
 
 *** JavaScript dependencies
 When <HEADER-WIDGET> is used all JavaScript dependencies are added

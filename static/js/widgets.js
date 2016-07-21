@@ -98,7 +98,7 @@ $(document).ready(function() {
         dirtyObjectIds.forEach(function(dirtyObjectId) {
           var dirtyObjectIdTag = '#' + dirtyObjectId;
           var dirtyHtml = $(dirtyObjectIdTag);
-          var className = dirtyHtml.attr("class");
+          var className = dirtyHtml.attr("class").trim();
           className = className.substring(7 ,className.length);
 
           var dirtyUrl = restBaseUrl + className;

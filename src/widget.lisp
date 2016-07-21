@@ -158,8 +158,11 @@ transfer or embedded in another page."))
 (defmethod render-widget :around ((this <widget>))
   (demark-dirty this)
   (with-output-to-string (ret-val)
-    (format ret-val "<div id=\"~a\" class=\"widget " (id this))
-    (format ret-val (get-trimmed-class-name this))
+    (format ret-val
+            "<div id=\"~a\" class=\"~a"
+            (id this)
+            (get-trimmed-class-name this
+                                    :get-all t))
     (format ret-val "\">")
     (format ret-val (call-next-method this))
     (format ret-val "</div>")))

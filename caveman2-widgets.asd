@@ -15,6 +15,7 @@
   :author "Richard Paul Bäck"
   :license "LLGPL"
   :depends-on (:trivial-garbage
+               :moptilities
                :caveman2)
   :components ((:module "src"
                         :components
