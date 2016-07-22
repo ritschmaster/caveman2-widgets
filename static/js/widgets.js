@@ -29,7 +29,6 @@ $(document).ready(function() {
   function registerOperationsOnTags(context=document) {
     $('.button-widget', context).submit(function(e) {
       e.preventDefault();
-
       if ($(this).attr("class").indexOf("form-widget") < 0) {
         var form = $(this).children();
         var action = $(form).attr('action');
@@ -146,12 +145,12 @@ $(document).ready(function() {
             },
             success: function(dirtyData, dirtyStatus, dirtyJqXHR) {
               var parsedHtml = $.parseHTML(dirtyData, document, true);
+              registerOperationsOnTags(parsedHtml);
               if (dirtyData.indexOf(dirtyObjectId)) {
                 parsedHtml = $(parsedHtml).children();
               }
               dirtyHtml.empty();
               dirtyHtml.append(parsedHtml);
-              registerOperationsOnTags(parsedHtml);
             }
           });
         });

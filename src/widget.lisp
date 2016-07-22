@@ -180,16 +180,24 @@ widget as string. It is intended to use this within a simple HTML
 transfer or embedded in another page."))
 
 (defmethod render-widget :around ((this <widget>))
-  (demark-dirty this)
-  (with-output-to-string (ret-val)
-    (format ret-val
-            "<div id=\"~a\" class=\"~a"
-            (id this)
-            (get-trimmed-class-name this
-                                    :get-all t))
-    (format ret-val "\">")
-    (format ret-val (call-next-method this))
-    (format ret-val "</div>")))
+  (cond
+    ((or
+      (not (protected this)) ;; not proctected
+      (and ;; protected and authorized
+       (protected this)
+       (gethash (protected this) *session*)))
+     (demark-dirty this)
+     (with-output-to-string (ret-val)
+       (format ret-val
+               "<div id=\"~a\" class=\"~a"
+               (id this)
+               (get-trimmed-class-name this
+                                       :get-all t))
+       (format ret-val "\">")
+       (format ret-val (call-next-method this))
+       (format ret-val "</div>")))
+    (t  ;; protected and not authorized
+     "")))
 
 (defgeneric render-widget-rest (this method args)
   (:documentation "

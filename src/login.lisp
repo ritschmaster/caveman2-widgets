@@ -58,15 +58,19 @@ first is the username and the second is the password.")
     :documentation "For internal use only. This slot is used to
 indicate that the login procedure did not work.")
    (logout-button
-    :initform
-    (make-widget
-     :session '<button-widget>
-     :label "Logout"
-     :callback
-     #'(lambda (args)
-         (setf (logged-in *session*)
-               nil)))
+    :initform nil
     :reader logout-button)))
+
+(defmethod initialize-instance :after ((this <login-widget>) &key)
+  (setf (slot-value this 'logout-button)
+        (make-widget
+         :global '<button-widget>
+         :label "Logout"
+         :callback
+         #'(lambda (args)
+             (setf (logged-in *session*)
+                   nil)
+             (mark-dirty this)))))
 
 (defmethod render-widget ((this <login-widget>))
   (with-output-to-string (ret-val)
@@ -79,19 +83,36 @@ indicate that the login procedure did not work.")
           (format
            ret-val
            (render-widget
-            (make-widget
-             :session '<button-widget>
-             :label "Login"
-             :callback
-             #'(lambda (args)
-                 (if (funcall (authenticator this)
-                              "user"
-                              "password")
-                     (setf (logged-in *session*)
-                           t)
-                     (setf (login-failed this)
-                           t))
-                 (mark-dirty this)))))
+            (let ((text-field (make-instance '<input-field>
+                                             :label "Username"
+                                             :input-type "text"
+                                             :name "username"
+                                             :value ""))
+                  (password-field (make-instance '<input-field>
+                                                 :label "Password"
+                                                 :input-type "password"
+                                                 :name "password"
+                                                 :value "")))
+              (make-widget :global '<form-widget>
+                           :input-fields (list
+                                          text-field
+                                          password-field)
+                           :label "Login"
+                           :callback
+                           #'(lambda (args)
+                               (if (funcall (authenticator this)
+                                            (cdr
+                                             (assoc 'username args
+                                                    :test #'string-case-insensitive=))
+                                            (cdr
+                                             (assoc 'password args
+                                                    :test #'string-case-insensitive=)))
+                                   (setf (logged-in *session*)
+                                         t)
+                                   (setf (login-failed this)
+                                         t))
+                               (mark-dirty this))))
+            ))
           (format
            ret-val "<div class=\"failed-login\">~a</div>"
            (if (login-failed this)

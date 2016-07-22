@@ -7,12 +7,13 @@ much as Weblocks itself. For people who don't now Weblocks' aproach:
 the developer can create web applications (more) like a normal GUI
 application by using subclassable widgets which can have callbacks and
 their like. Each Widget is only responsible for its own content but
-might interfere with other objects. But the really cool part is that
-the framework automatically creates your site for dynamically
-(JavaScript based) access *and* normal access. For the dynamic
-approach this means that you don't have to manage or even care to
-refresh parts of your website, because widgets can do that
-by themselves!
+might interfere with other objects.
+
+But the really cool part is that the framework automatically creates
+your site for dynamically (JavaScript based) access *and* normal
+access. For the dynamic approach this means that you don't have to
+manage or even care to refresh parts of your website, because widgets
+can do that by themselves!
 ** Installation
 You can use caveman2-widgets with Quicklisp!
 #+BEGIN_SRC lisp
@@ -571,7 +572,7 @@ used. Please implement it as you wish. Default implementations are:
 - FOR = :LOGIN :: Protects the widget by the default login-widget
 
 #+BEGIN_SRC lisp
-(defmethod protect-widget ((widget <widget>) (for (eql :myprotection))
+(defmethod protect-widget ((widget <widget>) (for (eql :myprotection)))
   (setf (protected widget)
         :myprotection)
   widget)
@@ -581,11 +582,42 @@ used. Please implement it as you wish. Default implementations are:
    (make-widget :global '<string-widget>
                 :text "<h1>This is a protected text</h1>")
    :myprotection))
+
+;; Should throw 403
+(defroute "/protected-widget" ()
+  (concatenate 'string
+               "<a href=\"/rest/string-widget?id="
+               (id  *specific-protected-widget*)
+               "\">Will throw 403</a>"
+
+               (render-widget *specific-protected-widget*)))
+
+(defmethod on-exception ((app <web>) (code (eql 403)))
+  (declare (ignore app))
+  "403 - The protection works.")
 #+END_SRC
 
 an requester's session to have a specific token to
 *** Login
-Protecting certain widgets by a login is very easy.
+Protecting certain widgets by a login is very easy. The <LOGIN-WIDGET>
+organizes the following things:
+1. It displays a login form and logs the client in if he passes the
+   challenge. The successful pass sets will result in an permanent
+   non-nil value if you call "(LOGGED-IN *SESSION*)". This means that
+   every widget that requires the authroization level :LOGIN through
+   the PROTECT-WIDGET method can now be accessed by the user.
+2. It supplies a Logout button. This button can be access through the
+   LOGOUT-BUTTON reader. You therefore can render the button anywhere
+   you like. Pressing the button will result in a logout and therefore
+   in a permanent NIL for "(LOGGED-IN *SESSION*)".
+3. It renders certain widgets if the login was successful. This can be
+   either used e.g. for a success message.
+
+Additionally you can specify different authentication challanges
+(authentication functions) if you wish. But using the <LOGIN-WIDGET>
+and passing the challenge will *only* set the authoriatzition level
+to :LOGIN. This means that you need to create your own <LOGIN-WIDGET>
+if you want some other level for different authentication functions!
 
 #+BEGIN_SRC lisp
 (defvar *protected-widget*
@@ -594,7 +626,7 @@ Protecting certain widgets by a login is very easy.
                 :text "<h1>This is a protected text</h1>")
    :login))
 
-(defroute "/login" ()
+(defroute "/" ()
   (with-html-document (doc
                        (make-instance '<header-widget>))
     (setf (body doc)
@@ -695,6 +727,10 @@ which you should absolutely not modify.
 - :WIDGET-HOLDER
 - :DIRTY-OBJECT-IDS
 - :JAVASCRIPT-AVAILABLE
+
+** See also
+- [[https://github.com/ritschmaster/caveman2-widgets-bootstrap][caveman2-widgets-bootstrap]] :: Introduces new widgets that use
+     [[https://getbootstrap.com/][Bootstrap]].
 
 ** Author
 

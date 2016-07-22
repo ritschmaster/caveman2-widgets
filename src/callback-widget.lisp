@@ -177,12 +177,19 @@ string should be an URL to which the server should redirect."))
    (value
     :initarg :value
     :initform (error "Must specify an input value.")
-    :reader value)))
+    :reader value)
+   (label
+    :initarg :label
+    :initform ""
+    :accessor label
+    :documentation "The label which will be placed before the <input> tag.")))
 
 (defmethod render-widget ((this <input-field>))
   (format nil "<div class=\"input-field\">
+<div class=\"input-label\">~a</div>
 <input type=\"~a\" name=\"~a\" value=\"~a\" />
 </div>"
+          (funcall +translate+ (label this))
           (input-type this)
           (name this)
           (value this)))
@@ -208,9 +215,8 @@ string should be an URL to which the server should redirect."))
               (render-widget input-field)))
     (format ret-val "<button type=\"submit\" class=\"~a\">~a</button>"
             (or (classes this) "")
-            (funcall +translate+ (label this)))
+            (funcall +translate+ (label this))) 
     (format ret-val "<input type=\"hidden\" name=\"~a\" value=\"~a\" /> 
 </form>"
             *input-field-for-old-uri*
-            (getf (request-env *request*) :request-uri))))
-
+            (getf (request-env *request*) :request-uri)))) 
