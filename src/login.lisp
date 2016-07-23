@@ -25,6 +25,7 @@
 
    :<login-widget>
    :authenticator
+   :login-form
    :logout-button
 
    :protect-widget))
@@ -57,6 +58,9 @@ first is the username and the second is the password.")
     :accessor login-failed
     :documentation "For internal use only. This slot is used to
 indicate that the login procedure did not work.")
+   (login-form
+    :initform nil
+    :reader login-form)
    (logout-button
     :initform nil
     :reader logout-button)))
@@ -73,6 +77,37 @@ indicate that the login procedure did not work.")
              (mark-dirty this)))))
 
 (defmethod render-widget ((this <login-widget>))
+  (when (null (login-form this))
+    (setf (slot-value this 'login-form)
+          (let ((text-field (make-instance '<input-field>
+                                           :label "Username"
+                                           :input-type "text"
+                                           :name "username"
+                                           :value ""))
+                (password-field (make-instance '<input-field>
+                                               :label "Password"
+                                               :input-type "password"
+                                               :name "password"
+                                               :value "")))
+            (make-widget :global '<form-widget>
+                         :input-fields (list
+                                        text-field
+                                        password-field)
+                         :label "Login"
+                         :callback
+                         #'(lambda (args)
+                             (if (funcall (authenticator this)
+                                          (cdr
+                                           (assoc 'username args
+                                                  :test #'string-case-insensitive=))
+                                          (cdr
+                                           (assoc 'password args
+                                                  :test #'string-case-insensitive=)))
+                                 (setf (logged-in *session*)
+                                       t)
+                                 (setf (login-failed this)
+                                       t))
+                             (mark-dirty this))))))
   (with-output-to-string (ret-val)
     (if (logged-in *session*)
         (progn
@@ -83,36 +118,7 @@ indicate that the login procedure did not work.")
           (format
            ret-val
            (render-widget
-            (let ((text-field (make-instance '<input-field>
-                                             :label "Username"
-                                             :input-type "text"
-                                             :name "username"
-                                             :value ""))
-                  (password-field (make-instance '<input-field>
-                                                 :label "Password"
-                                                 :input-type "password"
-                                                 :name "password"
-                                                 :value "")))
-              (make-widget :global '<form-widget>
-                           :input-fields (list
-                                          text-field
-                                          password-field)
-                           :label "Login"
-                           :callback
-                           #'(lambda (args)
-                               (if (funcall (authenticator this)
-                                            (cdr
-                                             (assoc 'username args
-                                                    :test #'string-case-insensitive=))
-                                            (cdr
-                                             (assoc 'password args
-                                                    :test #'string-case-insensitive=)))
-                                   (setf (logged-in *session*)
-                                         t)
-                                   (setf (login-failed this)
-                                         t))
-                               (mark-dirty this))))
-            ))
+            (login-form this)))
           (format
            ret-val "<div class=\"failed-login\">~a</div>"
            (if (login-failed this)

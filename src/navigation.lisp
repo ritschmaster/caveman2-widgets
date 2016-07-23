@@ -19,6 +19,7 @@
    :<menu-navigation-widget>
    :<blank-navigation-widget>
    :pages
+   :composite
    :current-page
    :base-path
    :session-tag
@@ -49,7 +50,7 @@ and it should look like: (list (list \"pagetitle\" \"uri-path\" <widget>))")
     :documentation "The name for the current page to display.")
    (composite
     :initform nil
-    :reader composite)
+    :accessor composite)
    (base-path
     :initform ""
     :initarg :base-path
@@ -111,23 +112,24 @@ that: (list \"pagetitle\" \"uri-path\" <widget-for-pagetitle>)."
                 (with-output-to-string (ret-val)
                   (format ret-val "<ul class=\"navigation-widget-links\">")
                   (dolist (page (pages this))
-                    (format ret-val "<li>")
-                    (format ret-val (render-widget
-                                     (make-widget
-                                      :session '<link-widget>
-                                      :label (first page)
-                                      :callback #'(lambda (params)
-                                                    (setf (current-page this) (second page))
-                                                    (concatenate 'string
-                                                                 (subseq
-                                                                  (base-path this) 1)
-                                                                 (if (= (length
-                                                                         (base-path this))
-                                                                        1)
-                                                                     ""
-                                                                     "/")
-                                                                 (second page))))))
-                    (format ret-val "</li>")
+                    (when (not (find :hidden page))
+                      (format ret-val "<li>")
+                      (format ret-val (render-widget
+                                       (make-widget
+                                        :session '<link-widget>
+                                        :label (first page)
+                                        :callback #'(lambda (params)
+                                                      (setf (current-page this) (second page))
+                                                      (concatenate 'string
+                                                                   (subseq
+                                                                    (base-path this) 1)
+                                                                   (if (= (length
+                                                                           (base-path this))
+                                                                          1)
+                                                                       ""
+                                                                       "/")
+                                                                   (second page))))))
+                      (format ret-val "</li>"))
                     (when (string= (second page)
                                    (current-page this))
                       (setf current-widget (third page))))

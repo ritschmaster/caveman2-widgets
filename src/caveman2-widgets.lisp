@@ -87,6 +87,7 @@
 
    :<login-widget>
    :authenticator
+   :login-form
    :logout-button
 
    :protect-widget
@@ -112,9 +113,10 @@
 
    :with-html-document
 
-   ;; from caveman2-widgets.navigation-widget
+   ;; from caveman2-widgets.navigation
    :<menu-navigation-widget>
    :<blank-navigation-widget>
+   :composite
    :current-page
    :base-path
    :defnav
