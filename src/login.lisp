@@ -24,7 +24,7 @@
    :logged-in
 
    :<login-widget>
-   :authenticator
+   :login-authenticator
    :login-form
    :logout-button
 
@@ -47,9 +47,9 @@ indicated that a session holder is logged in (or not).")
         value))
 
 (defclass <login-widget> (<composite-widget>)
-  ((authenticator
+  ((login-authenticator
     :initarg :authenticator
-    :reader authenticator
+    :reader login-authenticator
     :initform #'(lambda (user password) nil)
     :documentation "Must be a function that takes two parameters. The
 first is the username and the second is the password.")
@@ -69,7 +69,7 @@ indicate that the login procedure did not work.")
   (setf (slot-value this 'logout-button)
         (make-widget
          :global '<button-widget>
-         :label "Logout"
+         :label "Sign out"
          :callback
          #'(lambda (args)
              (setf (logged-in *session*)
@@ -93,10 +93,10 @@ indicate that the login procedure did not work.")
                          :input-fields (list
                                         text-field
                                         password-field)
-                         :label "Login"
+                         :label "Sign in"
                          :callback
                          #'(lambda (args)
-                             (if (funcall (authenticator this)
+                             (if (funcall (login-authenticator this)
                                           (cdr
                                            (assoc 'username args
                                                   :test #'string-case-insensitive=))
@@ -124,7 +124,7 @@ indicate that the login procedure did not work.")
            (if (login-failed this)
                (progn
                  (setf (login-failed this) nil)
-                 (funcall +translate+ "Your login attempt has failed!"))
+                 (funcall +translate+ "Your sign in attempt has failed!"))
                ""))))))
 
 (defgeneric protect-widget (widget for)

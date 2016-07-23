@@ -86,7 +86,7 @@
    :logged-in
 
    :<login-widget>
-   :authenticator
+   :login-authenticator
    :login-form
    :logout-button
 
