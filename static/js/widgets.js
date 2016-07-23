@@ -1,3 +1,11 @@
+document.caveman2widgets = {};
+/**
+ * If false, then a jump through a link-widget will not be executed.
+ */
+document.caveman2widgets.doTheJump = true;
+
+document.caveman2widgets.registerOperationsHooks = new Array();
+
 $(document).ready(function() {
   var restBaseUrl = "/rest/";
   var restJavaScriptCheckerUrl = "javascript-checker";
@@ -94,7 +102,7 @@ $(document).ready(function() {
           var url = data;
           if (("/" + url) == window.location.pathname) {
 
-          } else {
+          } else if (document.caveman2widgets.doTheJump) {
             window.location.href = url;
           }
           processDirty();
@@ -146,6 +154,9 @@ $(document).ready(function() {
             success: function(dirtyData, dirtyStatus, dirtyJqXHR) {
               var parsedHtml = $.parseHTML(dirtyData, document, true);
               registerOperationsOnTags(parsedHtml);
+              document.caveman2widgets.registerOperationsHooks.forEach(function(fn) {
+                fn(parsedHtml);
+              });
               if (dirtyData.indexOf(dirtyObjectId)) {
                 parsedHtml = $(parsedHtml).children();
               }

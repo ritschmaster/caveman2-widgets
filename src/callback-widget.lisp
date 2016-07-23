@@ -14,6 +14,7 @@
   (:export
    :<callback-widget>
    :label
+   :callback
    :uri-path
    :http-method
    :classes
@@ -41,6 +42,7 @@
    (callback
     :initform #'(lambda (args) "")
     :initarg :callback
+    :reader callback
     :documentation "")
    (uri-path
     :initform (error "Must supply an uri-path to access the widget.")

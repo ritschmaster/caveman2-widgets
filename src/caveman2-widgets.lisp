@@ -63,7 +63,7 @@
 
    ;; from caveman2-widgets.callback-widget
    :<callback-widget>
-   :init-callback-widget
+   :callback
    :label
    :uri-path
    :classes
