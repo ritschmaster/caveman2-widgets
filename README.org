@@ -373,6 +373,10 @@ is changed and refreshed (either via JavaScript or through the
 link). Please keep in mind that navigation objects are *session
 stateful widgets*.
 
+Paths are only created automatically by the DEFNAV macro. The first
+item in the list is the widget which will be displayed at the base
+path of the navigation.
+
 A very basic example:
 #+BEGIN_SRC lisp
 (defvar *first-widget*
@@ -416,7 +420,8 @@ its widgets get rendered. The slot BASE-PATH is created for that.
 
 There are two default navigation widgets:
 - <MENU-NAVIGATION-WIDGET> :: A navigation with a menu. You can change
-     the menu appearance with CSS.
+     the menu appearance with CSS. With the :HIDDEN keyword you can
+     hide a path from the navigation list.
 - <BLANK-NAVIGATION-WIDGET> :: A navigation without any menu. It is
      controlled by the URL only - or by other widgets.
 *** Table objects
