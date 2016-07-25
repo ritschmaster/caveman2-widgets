@@ -12,6 +12,8 @@
         :caveman2)
   (:export
    :+translate+
+   :*automatically-set-languages*
+   :*language-key-in-session*
    :*application-root*
    :*static-directory*
    :*js-directory*
@@ -26,7 +28,9 @@
    :clean-list-of-broken-links
    :get-value-for-cons-list
    :string-case-insensitive=
-   :javascript-available))
+   :javascript-available
+   :check-and-set-language
+   :accepted-languages))
 (in-package :caveman2-widgets.util)
 
 (defparameter *application-root* (asdf:system-source-directory :caveman2-widgets))
@@ -34,6 +38,8 @@
 (defparameter *js-directory* (merge-pathnames #P"js/" *static-directory*))
 (defparameter *css-directory* (merge-pathnames #P"css/" *static-directory*))
 
+(defvar *automatically-set-languages* t)
+(defvar *language-key-in-session* :accept-language)
 (defvar +translate+ #'(lambda (text
                           &key
                             plural-p
@@ -156,3 +162,21 @@
 (defgeneric javascript-available (session))
 (defmethod javascript-available ((session hash-table))
   (gethash :javascript-available session))
+
+(defun check-and-set-language (request session)
+  (when (and
+         *automatically-set-languages*
+         (null (accepted-languages session)))
+    (setf
+     (accepted-languages session)
+     (gethash "accept-language" (request-headers request)))))
+
+
+(defgeneric accepted-languages (session))
+(defmethod accepted-languages ((session hash-table))
+  (gethash *language-key-in-session* session))
+
+(defgeneric (setf accepted-languages) (value session))
+(defmethod (setf accepted-languages) (value (session hash-table))
+  (setf (gethash *language-key-in-session* session)
+        value))

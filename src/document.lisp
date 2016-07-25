@@ -8,6 +8,7 @@
 (in-package :cl-user)
 (defpackage caveman2-widgets.document
   (:use :cl
+        :caveman2
         :caveman2-widgets.util
         :caveman2-widgets.widget)
   (:export
@@ -167,9 +168,12 @@
     :initform nil
     :initarg :bottom
     :accessor bottom))
-  (:documentation "The body-widget will be wrapped in a div with the id \"body\" automatically."))
+  (:documentation "The body-widget will be wrapped in a div with the
+id \"body\" automatically. Rendering this widget automatically sets
+the language!"))
 
 (defmethod render-widget ((this <html-document-widget>))
+  (check-and-set-language *request* *session*)
   (with-output-to-string (ret-val)
     (format ret-val "<html>~a
 <body>

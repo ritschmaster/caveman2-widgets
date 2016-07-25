@@ -77,7 +77,7 @@ There are two scopes: /global/ and /session/. The global scope
 "limits" the widget to *all* users. Therefore if you create a stateful
 widget the state will be displayed to all users of your site. Use
 MAKE-WIDGET with :GLOBAL to get a globally scoped widget.
-
+#+LATEX: \\\\
 A very simple example of what you can do with it:
 #+BEGIN_SRC lisp
 (defclass <global-widget> (<widget>)
@@ -217,19 +217,19 @@ You can use buttons and links that call specific functions. When you
 create a button/link only for a session the created route will be
 guarded. Therefore only the user with the associated route may
 actually access his button.
-
+#+LATEX: \\\\
 For each button there will be an URI like "/buttons/BUTTONID". You can
 access buttons via POST only. Links get a URI like "/links/LINKID" and
 can be accessed either by GET (get a redirect to the stored link) or
 by POST (return only the value of the link). In any case the callback
 function gets called - please keep that in mind.
-
+#+LATEX: \\\\
 If the return value of the link matches the current path then the side
 will be reloaded entirely or, if JavaScript is enabled, the dirty
 widgets will be reloaded. Please leave out the starting "/" If you
 want to address a target on the localhost. E.g. you are on the page
 "/test", then return "test" if you want to stay on it.
-
+#+LATEX: \\\\
 An example:
 #+BEGIN_SRC lisp
 (defroute "/" ()
@@ -307,7 +307,7 @@ MARK-DIRTY. This means that they will be reloaded dynamically (if the
 user has JavaScript is enabled). Please notice that you can mark *any*
 widget as dirty. Therefore you can order JavaScript to reload global
 widgets and sessioned widgets.
-
+#+LATEX: \\\\
 An example:
 #+BEGIN_SRC lisp
 (defclass <sessioned-widget> (<widget>)
@@ -372,11 +372,11 @@ currently selected path. If you click on a navigation link that object
 is changed and refreshed (either via JavaScript or through the
 link). Please keep in mind that navigation objects are *session
 stateful widgets*.
-
+#+LATEX: \\\\
 Paths are only created automatically by the DEFNAV macro. The first
 item in the list is the widget which will be displayed at the base
 path of the navigation.
-
+#+LATEX: \\\\
 A very basic example:
 #+BEGIN_SRC lisp
 (defvar *first-widget*
@@ -417,7 +417,7 @@ If the default navigation object doesn't render as you wish, you can
 subclass it and overwrite the RENDER-WIDGET method. Please notice that
 you can actually very easily adjust the path where the navigation and
 its widgets get rendered. The slot BASE-PATH is created for that.
-
+#+LATEX: \\\\
 There are two default navigation widgets:
 - <MENU-NAVIGATION-WIDGET> :: A navigation with a menu. You can change
      the menu appearance with CSS. With the :HIDDEN keyword you can
@@ -430,7 +430,7 @@ you want something more sophisticated the <LIMITED-TABLE-WIDGET>. The
 difference between the two is that <TABLE-WIDGET> just displays *all*
 items which are supplied through the PRODUCER function while the
 <LIMITED-TABLE-WIDGET> shows only a window of the available items.
-
+#+LATEX: \\\\
 Important for the usage of tables is that you supply a PRODUCER
 function. The function should return a list of <TABLE-ITEM>
 objects. This function can be anything but it has to take the key
@@ -440,13 +440,13 @@ arguments:
 - LENGTH-P :: A flag which should tell the function to return the
               available items if active.
 AMOUNT and ALREADY can be seen as synonyms for FROM and TO.
-
+#+LATEX: \\\\
 A <TABLE-ITEM> object is needed for tables. The essence of those
 objects is that they can be translated to lists through the generic
 function GET-AS-LIST. Therefore you don't have to subclass
 <TABLE-ITEM> at all just to add an implementation of GET-AS-LIST for
 your used class.
-
+#+LATEX: \\\\
 For the <TABLE-Widget> consider the following example:
 #+BEGIN_SRC lisp
 (defclass <my-item> (<table-item>)
@@ -574,7 +574,7 @@ widget. If the protection is non-nil the non-nil value is a keyword
 which refers to a key stored in the session. So if the session
 contains this keyword with a non-nil value the requester can access
 the widget. Otherwise he is denied (throws a 403 code).
-
+#+LATEX: \\\\
 The <WIDGET> class holds the PROTECTED slot. This slots value
 indicates the needed token in the session. But caveman2-widgets
 supplies an additional, specific *PROTECT-WIDGET* method which should be
@@ -623,7 +623,7 @@ organizes the following things:
    either used e.g. for a success message.
 
 *The <LOGIN-WIDGET> has to run in :SESSION scope!*
-
+#+LATEX: \\\\
 Additionally you can specify different authentication challanges
 (authentication functions) if you wish. But using the <LOGIN-WIDGET>
 and passing the challenge will *only* set the authoriatzition level
@@ -660,6 +660,23 @@ if you want some other level for different authentication functions!
                (render-widget
                 (get-widget-for-session :login-widget)))))))
 #+END_SRC
+*** Language getting/setting
+To store the accpeted languages in the session there is the
+CHECK-AND-SET-LANGUAGE function. This function uses the value supplied
+through the "Accept-languages" field in the HTTP request. It gets
+called through the render method by any <HTML-DOCUMENT-WIDGET>
+automatically. Which means that as soon as you use it you don't have
+to worry about getting the language. But on the other hand you have to
+make sure that every subclass of <HTML-DOCUMENT-WIDGET> again uses
+CHECK-AND-SET-LANGUAGE in its render-method.
+#+LATEX: \\\\
+You can access the currently accepted languages through the
+ACCEPTED-LANGUAGES.
+#+LATEX: \\\\
+If you rather use a manual language chooser you can supply
+AUTOMATICALLY-SET-LANGUAGES as NIL to the INIT-WIDGETS
+function. Please then use the setf method for ACCEPTED-LANGUAGES to
+set the language.
 *** Development hooks
 In case you want to do things at compile time (e.g. calling DEFROUTE)
 whe INIT-WIDGETS is evaluated there is the variable
@@ -675,8 +692,8 @@ whe INIT-WIDGETS is evaluated there is the variable
               ;; Accessing the user supplied <APP> object:
               (describe caveman2-widgets::*web*)
               "something")))))
-#+END_SRC
-** Things that happen automatically
+#+END_SRC 
+** Important notes/Things that happen automatically
 The following things you should keep in mind when using
 caveman2-widgets.
 
@@ -735,9 +752,11 @@ even break. Most likely all dynamic content just won't work
 *** Session values
 This section should inform you about keywords in the session variable
 which you should absolutely not modify.
-- :WIDGET-HOLDER
-- :DIRTY-OBJECT-IDS
-- :JAVASCRIPT-AVAILABLE
+- :WIDGET-HOLDER :: <WIDGET-HOLDER> object.
+- :DIRTY-OBJECT-IDS :: The name tells it all.
+- :JAVASCRIPT-AVAILABLE :: Holds a boolean value if JavaScript is
+     available or not.
+- :ACCEPT-LANGUAGE :: Holds the languages accepted by the client.
 
 ** See also
 - [[https://github.com/ritschmaster/caveman2-widgets-bootstrap][caveman2-widgets-bootstrap]] :: Introduces new widgets that use

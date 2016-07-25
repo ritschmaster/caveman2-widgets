@@ -22,10 +22,16 @@
    :*init-widgets-hooks*
 
    ;; from caveman2-widgets.util
-   :defroute-static
    :append-item
    :delete-item
    :find-item
+
+   :defroute-static
+   :check-and-set-language
+   :accepted-languages
+   :javascript-available
+
+   :*language-key-in-session*
 
    ;; from caveman2-widgets.widget
    :<widget>
@@ -140,7 +146,9 @@ libraries/applications that need those variables at compile time.")
                               (link-call-path *link-call-path*)
                               (dirty-objects-uri-path *dirty-objects-uri-path*)
                               (login-authentication-keyword
-                               *login-authentication-keyword*))
+                               *login-authentication-keyword*)
+                              (automatically-set-languages
+                               *automatically-set-languages*))
   (declare (<app> webapp)
            (string javascript-path)
            (string css-path)
@@ -156,7 +164,8 @@ libraries/applications that need those variables at compile time.")
   (setf *button-call-path* button-call-path)
   (setf *link-call-path* link-call-path)
   (setf *dirty-objects-uri-path* dirty-objects-uri-path)
-  (setf login-authentication-keyword *login-authentication-keyword*)
+  (setf *login-authentication-keyword* login-authentication-keyword)
+  (setf *automatically-set-languages* automatically-set-languages)
 
   (init-mark-dirty *web* *dirty-objects-uri-path*)
 
