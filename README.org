@@ -425,11 +425,8 @@ There are two default navigation widgets:
 - <BLANK-NAVIGATION-WIDGET> :: A navigation without any menu. It is
      controlled by the URL only - or by other widgets.
 *** Table objects
-You can create a table very simple. Just use the <TABLE-WIDGET> or if
-you want something more sophisticated the <LIMITED-TABLE-WIDGET>. The
-difference between the two is that <TABLE-WIDGET> just displays *all*
-items which are supplied through the PRODUCER function while the
-<LIMITED-TABLE-WIDGET> shows only a window of the available items.
+You can create a table very simple. A <TABLE-WIDGET> displays *all*
+items which are supplied through the PRODUCER function.
 #+LATEX: \\\\
 Important for the usage of tables is that you supply a PRODUCER
 function. The function should return a list of <TABLE-ITEM>
@@ -505,9 +502,84 @@ For the <TABLE-Widget> consider the following example:
           *table-widget*)))
 #+END_SRC
 
-The <LIMITED-TABLE-WIDGET> can be used as follows:
+*** Viewgrids
+The <VIEWGRID-WIDGET> is used to display a bulk of heterogenous
+items. The items must implement the RENDER-AS method. The
+<VIEWGRID-WIDGET> calls RENDER-AS with its VIEW slot. Therefore you
+have provide an implementation for the keyword supplied by VIEW in
+your <VIEWGRID-WIDGET>.
+#+LATEX: \\\\
+You can limit the displayed items with the MAX-ITEMS-TO-DISPLAY
+slot. If this slot is active the items are delivered on several pages
+instead on only one. If you supply additionally the DISPLAY-SELECTOR
+with the URI path on which the <VIEWGRID-WIDGET> object is rendered,
+then selectable page numbers are displayed on the bottom too.
+#+LATEX: \\\\
+Each item can be accessed. When accessing the item a specific
+given function is called with the item as parameter.
+#+LATEX: \\\\
+The following example covers all functionality:
 #+BEGIN_SRC lisp
-TODO! The <limited-table-widget> is not yet done! 
+(defclass <my-viewgrid-item> (<viewgrid-item>)
+  ((id
+    :initarg :id
+    :reader id)
+   (name
+    :initarg :name
+    :reader name)
+   (description
+    :initarg :description
+    :reader description)))
+
+(defmethod render-as ((this <my-viewgrid-item>) (view (eql :short)))
+  (format nil "<div style=\"padding-bottom:30px\">id: ~a<br>name: ~a<br>desc: ~a<div>"
+          (id this) (name this) (description this)))
+
+(defun producer (&key
+                   (from 0)
+                   (to nil)
+                   (length-p nil))
+  (let ((all '()))
+    (loop for x from 1 to 35 do
+         (setf all
+               (append all
+                       (list
+                        (make-instance '<my-viewgrid-item>
+                                       :id x
+                                       :name (format nil "~a" x)
+                                       :description (format nil "The ~a. item." x))))))
+    (cond
+      (length-p
+       (length all))
+      ((and from (not to))
+       (mapcan #'(lambda (item)
+                   (if (>= (id item) from)
+                       (list item)
+                       nil))
+               all))
+      ((and from to)
+       (mapcan #'(lambda (item)
+                   (if (and (>= (id item) from) (< (id item) to))
+                       (list item)
+                       nil))
+               all)))))
+
+(defroute "/viewgrid" ()
+  (with-html-document (doc
+                       (make-instance '<header-widget>))
+    (set-widget-for-session
+     :viewgrid
+     (make-widget :session '<viewgrid-widget>
+                  :producer #'producer
+                  :view :short
+                  :max-items-to-display 11
+                  :display-selector "viewgrid"
+                  :on-view #'(lambda (item)
+                               (format t
+                                       (render-as item :short))
+                               "viewgrid")))
+    (setf (body doc)
+          (get-widget-for-session :viewgrid))))
 #+END_SRC
 *** Translations
 Most strings that are rendered for a human readable get translated

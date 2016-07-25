@@ -138,32 +138,35 @@ $(document).ready(function() {
         dirtyObjectIds.forEach(function(dirtyObjectId) {
           var dirtyObjectIdTag = '#' + dirtyObjectId;
           var dirtyHtml = $(dirtyObjectIdTag);
-          var className = dirtyHtml.attr("class").trim();
-          var classNames = className.split(' ');
-          className = classNames[classNames.length - 1];
+          var className = dirtyHtml.attr("class");
+          if (className != null) {
+            className = className.trim();
+            var classNames = className.split(' ');
+            className = classNames[classNames.length - 1];
 
-          var dirtyUrl = restBaseUrl + className;
-          $.ajax({
-            url: dirtyUrl,
-            type: "get",
-            data: {
-              "id": dirtyObjectId
-            },
-            error: function(jqXHR, status, errorMsg) {
-            },
-            success: function(dirtyData, dirtyStatus, dirtyJqXHR) {
-              var parsedHtml = $.parseHTML(dirtyData, document, true);
-              registerOperationsOnTags(parsedHtml);
-              document.caveman2widgets.registerOperationsHooks.forEach(function(fn) {
-                fn(parsedHtml);
-              });
-              if (dirtyData.indexOf(dirtyObjectId)) {
-                parsedHtml = $(parsedHtml).children();
+            var dirtyUrl = restBaseUrl + className;
+            $.ajax({
+              url: dirtyUrl,
+              type: "get",
+              data: {
+                "id": dirtyObjectId
+              },
+              error: function(jqXHR, status, errorMsg) {
+              },
+              success: function(dirtyData, dirtyStatus, dirtyJqXHR) {
+                var parsedHtml = $.parseHTML(dirtyData, document, true);
+                registerOperationsOnTags(parsedHtml);
+                document.caveman2widgets.registerOperationsHooks.forEach(function(fn) {
+                  fn(parsedHtml);
+                });
+                if (dirtyData.indexOf(dirtyObjectId)) {
+                  parsedHtml = $(parsedHtml).children();
+                }
+                dirtyHtml.empty();
+                dirtyHtml.append(parsedHtml);
               }
-              dirtyHtml.empty();
-              dirtyHtml.append(parsedHtml);
-            }
-          });
+            });
+          }
         });
       }
     });

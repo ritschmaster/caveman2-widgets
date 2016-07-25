@@ -67,6 +67,13 @@
    :progressive-p
    :default-progressive-load-value
 
+   :<viewgrid-item>
+   :render-as
+   :<viewgrid-widget>
+   :view
+   :on-view
+   :max-items-to-display
+
    ;; from caveman2-widgets.callback-widget
    :<callback-widget>
    :callback
