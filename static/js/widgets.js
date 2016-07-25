@@ -53,7 +53,7 @@ $(document).ready(function() {
       e.preventDefault();
       var form = $(this).children();
       var valueArray = {};
-      $('input', form).each(function(i, obj) {
+      $('input,select', form).each(function(i, obj) {
         var name = $(obj).attr('name');
         if (name != ignoreButtonFieldName) {
           valueArray[name] = $(obj).val();

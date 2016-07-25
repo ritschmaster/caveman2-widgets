@@ -87,10 +87,18 @@
    :*link-call-path*
    :<link-widget>
 
+   :<form-field>
+   :name
+
    :<input-field>
    :input-type
-   :name
    :value
+
+   :<option-field>
+   :display-type
+   :<select-field>
+   :options
+   :multiple
 
    :<form-widget>
    :input-fields

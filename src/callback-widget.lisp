@@ -25,10 +25,18 @@
    :<link-widget>
    :*link-call-path*
 
-   :<input-field>
-   :input-type
+   :<form-field>
    :name
+   
+   :<input-field>
+   :input-type 
    :value
+
+   :<option-field>
+   :display-type
+   :<select-field>
+   :options
+   :multiple
 
    :<form-widget>
    :input-fields))
@@ -167,15 +175,20 @@ string should be an URL to which the server should redirect."))
                (funcall +translate+ (label this))
                "</a>"))
 
-(defclass <input-field> ()
+(defclass <form-field> ()
+  ((name
+    :initarg :name
+    :initform (error "Must specify a name for the form field.")
+    :reader name)))
+
+(defmethod render-widget ((this <form-field>))
+  (error "Not implemented."))
+
+(defclass <input-field> (<form-field>)
   ((input-type
     :initarg :input-type
     :initform (error "Must specify an input type.")
-    :reader input-type)
-   (name
-    :initarg :name
-    :initform (error "Must specify a input name.")
-    :reader name)
+    :reader input-type) 
    (value
     :initarg :value
     :initform (error "Must specify an input value.")
@@ -196,14 +209,58 @@ string should be an URL to which the server should redirect."))
           (name this)
           (value this)))
 
+(defclass <option-field> ()
+  ((value
+    :initarg :value
+    :initform (error "Must supply a value.")
+    :reader value)
+   (display-value
+    :initarg :display-value
+    :initform nil
+    :reader display-value
+    :documentation "If NIL then the displayed value will equal the
+used value.")))
+
+(defmethod render-widget ((this <option-field>))
+  (format nil "<option value=\"~a\">~a</option>"
+          (value this)
+          (or (display-value this) (value this))))
+
+(defclass <select-field> (<form-field>)
+  ((options
+    :initarg :options
+    :initform '()
+    :accessor options)
+   (multiple
+    :initarg :multiple
+    :initform nil
+    :accessor multiple
+    :documentation "Non-nil allows multiple choices.")))
+
+(defmethod append-item ((this <select-field>) (item <option-field>))
+  (setf (options this)
+        (append (options this)
+                (list item))))
+
+(defmethod render-widget ((this <select-field>))
+  (with-output-to-string (ret-val)
+    (format ret-val "<select name=\"~a\" ~a>"
+            (name this)
+            (if (multiple this)
+                "multiple"
+                ""))
+    (dolist (option (options this))
+      (format ret-val (render-widget option)))
+    (format ret-val "</select>")))
+
 (defclass <form-widget> (<button-widget>)
   ((input-fields
     :initarg :input-fields
     :initform '()
     :reader input-fields
-    :documentation "A list of <INPUT-FIELD> objects.")))
+    :documentation "A list of <FORM-FIELD> objects.")))
 
-(defmethod append-item ((this <form-widget>) (item <input-field>))
+(defmethod append-item ((this <form-widget>) (item <form-field>))
   (setf (slot-value this 'input-fields)
         (append (input-fields this)
                 (list item))))
