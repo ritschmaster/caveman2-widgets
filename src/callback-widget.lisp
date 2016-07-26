@@ -333,7 +333,7 @@ used value.")))
     :reader input-fields
     :documentation "A list of <FORM-FIELD> objects.")))
 
-(defmethod initialize-instance :after ((this <button-widget>) &key)
+(defmethod initialize-instance :after ((this <form-widget>) &key)
   (setf (slot-value this 'uri-path)
         (concatenate 'string
                      "/"
