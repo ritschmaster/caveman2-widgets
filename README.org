@@ -591,17 +591,58 @@ consists for 0 to n <FORM-FIELD> objects. If you have 0
 - <INPUT-FIELD> :: Is basically an abstraction of the HTML input-tag. 
 - <SELECT-FIELD> :: Consists of <OPTION-FIELD> objects.
 
-Of course you can implement your own <FORM-FIELD> classes too!
+Of course you can implement your own <FORM-FIELD> classes too! But
+keep in mind that *the default <FORM-FIELD> already implements
+constraints*.
+#+LATEX: \\\\
+To understand how constraints for forms work an examination of the
+available slots for <FORM-FIELD> objects is necessary:
+- REQUIRED :: A non-nil value indicates that this field has to have
+              some value.
+- SUPPLIED :: Will be set NIL by SET-REQUIRED-PRESENT and set T by
+              RENDER-WIDGET. It is NIL if the field is not supplied
+              and is therefore not dependent on REQUIRED. It should
+              tell the server whether an parameter was passed or not.
+- CHECK-FUNCTION :: Will be called by SET-REQUIRED-PRESENT and check
+                    if the passed value by the client is "correct". It
+                    is a lambda with one argument, which is the passed
+                    string from the client. Should return NIL if the
+                    passed string was not correct and a non-nil value
+                    otherwise.
+- ERROR-HAPPENED :: Will be set to T by SET-REQUIRED-PRESENT if the
+                    CHECK-FUNCTION did not succeed. The rendering the
+                    form will set it to NIL again.
+- ERROR-MESSAGE :: The message that will be displayed if
+                   ERROR-HAPPENED is T.
+
+You don't have to actually care for that procedure as the
+<FORM-WIDGET> calls this the SET-REQUIRED-PRESENT by itself. But it
+can be helpful to understand the entire process of checking the user
+input. The only thing to really memorize here is that *the given
+callback only gets called if all required fields where supplied and
+those fields where supplied correctly*.
+#+LATEX: \\\\
+Consider the following example for additional help:
 #+BEGIN_SRC lisp
+(defvar *password-field*
+  (make-instance '<input-field>
+                 :input-type "password"
+                 :check-function
+                 #'(lambda (pass)
+                     (if (<= (length pass)
+                             2)
+                         nil
+                         t))
+                 :error-message "Has to be longer than 2"
+                 :name "password"
+                 :value ""))
+
 (defvar *form-widget*
   (let ((text-field (make-instance '<input-field>
                                    :input-type "text"
                                    :name "text"
-                                   :value ""))
-        (password-field (make-instance '<input-field>
-                                       :input-type "password"
-                                       :name "password"
-                                       :value ""))
+                                   :value ""
+                                   :required t))
         (choice-field (make-instance
                        '<select-field>
                        :name "selection"
@@ -614,12 +655,12 @@ Of course you can implement your own <FORM-FIELD> classes too!
     (make-widget :global '<form-widget>
                  :input-fields (list
                                 text-field
-                                password-field
+                                *password-field*
                                 choice-field)
                  :label "Submit"
                  :callback
                  #'(lambda (args)
-                     (format t "received values:
+                     (format t "received correct values:
 ~a
 -------------"
                              args)))))

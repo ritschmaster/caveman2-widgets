@@ -12,6 +12,8 @@
         :caveman2-widgets.util
         :caveman2-widgets.widget)
   (:export
+   :get-from-callback-args
+   
    :<callback-widget>
    :label
    :callback
@@ -27,6 +29,11 @@
 
    :<form-field>
    :name
+   :required
+   :supplied
+   :error-happened
+   :error-message
+   :check-function
    
    :<input-field>
    :input-type 
@@ -41,6 +48,17 @@
    :<form-widget>
    :input-fields))
 (in-package :caveman2-widgets.callback-widget)
+
+(defun get-from-callback-args (key args)
+  "@param key A string which might be in the args
+@param args The value passed by a <CALLBACK-WIDGET> in its callback
+function."
+  (declare (string key))
+  (cdr
+   (assoc-if #'(lambda (item)
+                 (string= (string-downcase item)
+                          (string-downcase key)))
+             args)))
 
 (defclass <callback-widget> (<widget>)
   ((label
@@ -179,10 +197,68 @@ string should be an URL to which the server should redirect."))
   ((name
     :initarg :name
     :initform (error "Must specify a name for the form field.")
-    :reader name)))
+    :reader name)
+   (label
+    :initarg :label
+    :initform ""
+    :accessor label
+    :documentation "The label which will be placed before the <input> tag.")
+   (supplied
+    :initform t
+    :accessor supplied
+    :documentation "A highly frequented slot. It tells if the form
+field was filled by the client.") 
+   (required
+    :initarg :required
+    :initform nil
+    :accessor required)
+   (check-function
+    :initarg :check-function
+    :initform #'(lambda (str) t)
+    :accessor check-function
+    :documentation "Checks the user input for flaws. Takes one
+argument - the string passed by the user. Should return non-nil if
+everything is correct.")
+   (error-happened
+    :initform nil
+    :accessor error-happened
+    :documentation "A highly frequented slot. Non-nil indicates that
+an error occurred.")
+   (error-message
+    :initarg :error-message
+    :initform ""
+    :accessor error-message
+    :documentation "The error message that will be displayed if
+ERROR-HAPPENED is non-nil. The error message will be translated
+before rendered.")))
 
 (defmethod render-widget ((this <form-field>))
   (error "Not implemented."))
+
+(defmethod render-widget :around ((this <form-field>)) 
+  (with-output-to-string (ret-val)
+    (format ret-val "<div class=\"form-field\">") 
+    (format ret-val "<div class=\"form-field-label\">~a</div>" 
+            (funcall +translate+ (label this)))
+    (format ret-val (call-next-method this))
+    (cond
+      ((error-happened this)
+       (format ret-val "<div class=\"error-message\">~a</div>"
+               (funcall +translate+ (error-message this)))
+       (setf (error-happened this) nil))
+      ((and
+        (required this)
+        (not (supplied this)))
+       (format ret-val "<div class=\"not-supplied\">~a</div>"
+               (funcall +translate+ "(not supplied)"))
+       (setf (supplied this) t))
+      ((required this)
+       (format ret-val "<div class=\"required-field\">~a</div>"
+               (funcall +translate+ "(form field required)")))
+      (t
+       ;; nothing bad happened
+       ))
+    (format ret-val "</div>")))
 
 (defclass <input-field> (<form-field>)
   ((input-type
@@ -192,19 +268,12 @@ string should be an URL to which the server should redirect."))
    (value
     :initarg :value
     :initform (error "Must specify an input value.")
-    :reader value)
-   (label
-    :initarg :label
-    :initform ""
-    :accessor label
-    :documentation "The label which will be placed before the <input> tag.")))
+    :reader value))) 
 
 (defmethod render-widget ((this <input-field>))
   (format nil "<div class=\"input-field\">
-<div class=\"input-label\">~a</div>
 <input type=\"~a\" name=\"~a\" value=\"~a\" />
 </div>"
-          (funcall +translate+ (label this))
           (input-type this)
           (name this)
           (value this)))
@@ -244,7 +313,11 @@ used value.")))
 
 (defmethod render-widget ((this <select-field>))
   (with-output-to-string (ret-val)
-    (format ret-val "<select name=\"~a\" ~a>"
+    (format ret-val "<div class=\"select-field\">
+<select name=\"~a\" ~a>
+</div>"
+            (if (required this) "required-field" "")
+            (label this)
             (name this)
             (if (multiple this)
                 "multiple"
@@ -260,15 +333,77 @@ used value.")))
     :reader input-fields
     :documentation "A list of <FORM-FIELD> objects.")))
 
+(defmethod initialize-instance :after ((this <button-widget>) &key)
+  (setf (slot-value this 'uri-path)
+        (concatenate 'string
+                     "/"
+                     *button-call-path*
+                     "/"
+                     (id this)))
+  (setf (ningle:route *web*
+                      (uri-path this)
+                      :method (http-method this))
+        #'(lambda (params)
+            (test-widget-if-session (widget-scope this)
+                                    (id this))
+            ;; Check if all required fields have been
+            ;; filled and if they have been filled
+            ;; correctly
+            (if (not (set-required-present this
+                                           params))
+                (mark-dirty this) ;; something happened
+                (funcall (slot-value this 'callback) ;; everything ok
+                         params))
+            (let ((oldUrl (get-value-for-cons-list
+                           params
+                           *input-field-for-old-uri*)))
+              (when oldUrl
+                (redirect oldUrl))))))
+
 (defmethod append-item ((this <form-widget>) (item <form-field>))
   (setf (slot-value this 'input-fields)
         (append (input-fields this)
                 (list item))))
 
+(defgeneric set-required-present (this container))
+(defmethod set-required-present ((this <form-widget>) (container list))
+  "Sets the SUPPLIED slot of the INPUT-FIELDS based on a given list. Sets
+also the ERROR-HAPPENED slot by running the check function.
+
+@param container Should be the ARGS parameter of the the callback
+which is an ALIST.
+
+@return Returns NIL if any requirement is not met or any . Non-nil value if
+all requirements are met."
+  (let ((ret t)
+        (value-of-field nil))
+    (dolist (field (input-fields this))
+      (setf value-of-field
+            (cdr
+             (assoc-if #'(lambda (item)
+                           (string= (string-downcase item)
+                                    (string-downcase (name field))))
+                       container)))
+      (cond
+        ((and ;; not supplied
+          (required field)
+          (string= ""
+                   value-of-field))
+         (setf (supplied field) nil)
+         (setf ret nil))
+        ((not
+          (funcall (check-function field)
+                   value-of-field))
+         (setf (error-happened field) t)
+         (setf ret nil))
+        (t
+         (setf (supplied field) t))))
+    ret))
+
 (defmethod render-widget ((this <form-widget>))
   (with-output-to-string (ret-val)
     (format ret-val "<form method=\"post\" action=\"~a\">"
-            (uri-path this))
+            (uri-path this)) 
     (dolist (input-field (input-fields this))
       (format ret-val
               (render-widget input-field)))
@@ -278,4 +413,4 @@ used value.")))
     (format ret-val "<input type=\"hidden\" name=\"~a\" value=\"~a\" /> 
 </form>"
             *input-field-for-old-uri*
-            (getf (request-env *request*) :request-uri)))) 
+            (getf (request-env *request*) :request-uri))))

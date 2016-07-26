@@ -80,7 +80,7 @@ difference that is displays its widgets horizontally. "))
 
 (defmethod render-widget ((this <hcomposite-widget>))
   (with-output-to-string (ret-val)
-    (format ret-val "<div style=\"background-color;overflow:hidden\">
+    (format ret-val "<div style=\"overflow:hidden\">
 <div style=\"overflow:hidden\">")
     (dolist (widget (slot-value this 'widgets))
       (format ret-val "<div class=\"item\" style=\"float:left\">")

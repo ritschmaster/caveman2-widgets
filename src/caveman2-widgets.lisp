@@ -75,6 +75,8 @@
    :max-items-to-display
 
    ;; from caveman2-widgets.callback-widget
+   :get-from-callback-args
+
    :<callback-widget>
    :callback
    :label
@@ -89,6 +91,11 @@
 
    :<form-field>
    :name
+   :required
+   :supplied
+   :error-happened
+   :error-message
+   :check-function
 
    :<input-field>
    :input-type
