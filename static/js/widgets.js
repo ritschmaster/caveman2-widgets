@@ -100,7 +100,8 @@ $(document).ready(function() {
           var stateObj = { };
           var title = data;
           var url = data;
-          if (("/" + url) == window.location.pathname) {
+          if (("/" + url) == window.location.pathname
+             || url == "") {
 
           } else if (document.caveman2widgets.doTheJump) {
             window.location.href = url;

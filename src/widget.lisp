@@ -247,17 +247,25 @@ new widget."
      (t
       (error "unsupported scope"))))
 
-(defun set-widget-for-session (session-tag widget &optional (session *session*))
+(defun set-widget-for-session (session-tag widget
+                               &optional
+                                 (session *session*)
+                               &key
+                                 (force nil))
   "Saves a widget in the session variable. This should be considered ONLY for
 session scoped widgets. Only adds WIDGET if there is no widget at SESSION-TAG
 already.
+
+@param force If non-nil overwrites the already stored value.
 
 @return The current value in the SESSION at position SESSION-TAG."
   (declare (keyword session-tag)
            (<widget> widget)
            (hash-table session))
   (let ((ret-val (gethash session-tag session)))
-    (when (null ret-val)
+    (when (or
+           (null ret-val)
+           force)
       (setf (gethash session-tag session)
             widget))
     ret-val))

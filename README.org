@@ -3,12 +3,12 @@
 caveman2-widgets is an extension library to [[https://github.com/fukamachi/caveman][caveman2]]. It is influenced
 by [[https://github.com/skypher/weblocks][Weblocks]] and introduces its widget system for the developer. By
 only using its widget concept it does not control the developer as
-much as Weblocks itself. For people who don't now Weblocks' aproach:
+much as Weblocks itself. For people who don't now Weblocks' approach:
 the developer can create web applications (more) like a normal GUI
 application by using subclassable widgets which can have callbacks and
 their like. Each Widget is only responsible for its own content but
-might interfere with other objects.
-
+might interfere with other objects through a given context.
+#+LATEX: \\\\
 But the really cool part is that the framework automatically creates
 your site for dynamically (JavaScript based) access *and* normal
 access. For the dynamic approach this means that you don't have to

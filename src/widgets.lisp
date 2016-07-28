@@ -303,28 +303,39 @@ many items will be displayed on each viewgrid page.")
    (display-selector
     :initarg :display-selector
     :accessor display-selector
-    :documentation "A page selector are the page numbers which the user can click to access the page. If NIL don't display a page selector. The non-nil value has to be the URI path in which the viewgrid is used. E.g. display-selector = \"view\" if the viewgrid is accessed on the page /view."
-)
-
-(current-from
- :initform 0)
-(selector
- :initform nil)
-(prev-button
- :initform nil)
-(next-button
- :initform nil)))
+    :documentation "A page selector are the page numbers which the
+user can click to access the page. If NIL don't display a page
+selector. The non-nil value has to be the URI path in which the
+viewgrid is used. E.g. display-selector = \"view\" if the viewgrid is
+accessed on the page /view.")
+   (current-from
+    :initform 0)
+   (selector
+    :initform nil)
+   (prev-button
+    :initform nil)
+   (next-button
+    :initform nil)))
 
 (defmethod render-widget ((this <viewgrid-widget>))
   (with-output-to-string (ret-val)
-    (let ((producer-args (list :from (slot-value this 'current-from))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;; Actually rendering the items:
+    (let ((producer-args (list :from (slot-value this 'current-from)))
+          (all-items nil))
       (when (max-items-to-display this)
         (setf producer-args
               (append producer-args
                       (list :to (+
                                  (slot-value this 'current-from)
                                  (max-items-to-display this))))))
-      (dolist (item (apply (producer this) producer-args))
+      (setf all-items (apply (producer this) producer-args))
+      (when (not (apply (producer this) producer-args))
+        (format ret-val "<div class=\"error-no-items\">~a</div>"
+                (funcall
+                 +translate+
+                 "Sorry but there are no viewgrid items available!")))
+      (dolist (item all-items)
         (format ret-val "<div class=\"viewgrid-line\">
       <div class=\"viewgrid-item\">~a</div>
       <div class=\"viewgrid-item-view\">~a</div>
@@ -333,11 +344,13 @@ many items will be displayed on each viewgrid page.")
                 (if (on-view this)
                     (render-widget
                      (make-widget :session '<link-widget>
-                                  :label "View grid item"
+                                  :label "View dataview item"
                                   :callback
                                   #'(lambda (args)
                                       (funcall (on-view this) item))))
                     "")))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
       (when (max-items-to-display this)
         (format ret-val "<div class=\"pagenumber\">~a~a~a~a</div>"
                 (funcall +translate+ "Viewing page ")
