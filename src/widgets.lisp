@@ -41,6 +41,7 @@
    :<viewgrid-widget>
    :view
    :on-view
+   :on-view-label
    :max-items-to-display))
 (in-package :caveman2-widgets.widgets)
 
@@ -294,6 +295,12 @@ provide an according method for that value!")
     :documentation "Must either be NIL or a function which takes one
 argument. The passed argument is the item in the viewgrid which is
 viewed. If the value is NIL the client can't view a specific item.")
+   (on-view-label
+    :initarg :on-view-label
+    :initform "View dataview item"
+    :accessor on-view-label
+    :documentation "The text which should be displayed on the button for the
+ON-VIEW callback.")
    (max-items-to-display
     :initarg :max-items-to-display
     :initform nil
@@ -344,7 +351,7 @@ accessed on the page /view.")
                 (if (on-view this)
                     (render-widget
                      (make-widget :session '<link-widget>
-                                  :label "View dataview item"
+                                  :label (on-view-label this)
                                   :callback
                                   #'(lambda (args)
                                       (funcall (on-view this) item))))

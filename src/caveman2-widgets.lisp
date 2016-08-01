@@ -72,6 +72,7 @@
    :<viewgrid-widget>
    :view
    :on-view
+   :on-view-label
    :max-items-to-display
 
    ;; from caveman2-widgets.callback-widget
@@ -115,6 +116,7 @@
 
    :<login-widget>
    :login-authenticator
+   :signout-hook
    :login-form
    :logout-button
 

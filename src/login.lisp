@@ -25,6 +25,7 @@
 
    :<login-widget>
    :login-authenticator
+   :signout-hook
    :login-form
    :logout-button
 
@@ -53,6 +54,11 @@ indicated that a session holder is logged in (or not).")
     :initform #'(lambda (user password) nil)
     :documentation "Must be a function that takes two parameters. The
 first is the username and the second is the password.")
+   (signout-hook
+    :initform nil
+    :initarg :signout-hook
+    :accessor signout-hook
+    :documentation "A functions which will be called after signing out.")
    (login-failed
     :initform nil
     :accessor login-failed
@@ -74,6 +80,8 @@ indicate that the login procedure did not work.")
          #'(lambda (args)
              (setf (logged-in *session*)
                    nil)
+             (when (signout-hook this)
+               (funcall (signout-hook this)))
              (mark-dirty this)))))
 
 (defmethod render-widget ((this <login-widget>))
