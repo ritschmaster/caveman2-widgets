@@ -108,6 +108,9 @@
    :options
    :multiple
 
+   :<radio-field>
+   :checked-option
+
    :<form-widget>
    :input-fields
 

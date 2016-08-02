@@ -45,6 +45,9 @@
    :options
    :multiple
 
+   :<radio-field>
+   :checked-option
+
    :<form-widget>
    :input-fields))
 (in-package :caveman2-widgets.callback-widget)
@@ -314,17 +317,51 @@ used value.")))
 (defmethod render-widget ((this <select-field>))
   (with-output-to-string (ret-val)
     (format ret-val "<div class=\"select-field\">
-<select name=\"~a\" ~a>
-</div>"
-            (if (required this) "required-field" "")
-            (label this)
+<select name=\"~a\" ~a>"
             (name this)
+            (if (required this) "required-field" "")
             (if (multiple this)
                 "multiple"
                 ""))
     (dolist (option (options this))
       (format ret-val (render-widget option)))
-    (format ret-val "</select>")))
+    (format ret-val "</select>
+</div>")))
+
+(defclass <radio-field> (<form-field>)
+  ((options
+    :initarg :options
+    :initform '()
+    :accessor options)
+   (checked-option
+    :initform nil
+    :initarg :checked-option
+    :accessor checked-option
+    :documentation "The option which is checked. Must be a
+number. Start with 0.")))
+
+(defmethod append-item ((this <radio-field>) (item string))
+  (setf (options this)
+        (append (options this)
+                (list item)))) 
+
+(defmethod render-widget ((this <radio-field>))
+  (with-output-to-string (ret-val)
+    (format ret-val "<div class=\"radio-field\">")
+    (let ((i 0))
+      (dolist (option (options this))
+        (format ret-val "<div class=\"option\"><input type=\"radio\" name=\"~a\" value=\"~a\" ~a>~a
+</div>"
+                (name this)
+                option
+                (if (and
+                     (checked-option this)
+                     (= (checked-option this) i))
+                    "checked"
+                    "")
+                (funcall +translate+ option))
+        (incf i)))
+    (format ret-val "</div>")))
 
 (defclass <form-widget> (<button-widget>)
   ((input-fields

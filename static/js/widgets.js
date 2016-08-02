@@ -53,7 +53,19 @@ $(document).ready(function() {
       e.preventDefault();
       var form = $(this).children();
       var valueArray = {};
-      $('input,select', form).each(function(i, obj) {
+      $('input[type="text"],input[type="password"]', form).each(function(i, obj) {
+        var name = $(obj).attr('name');
+        if (name != ignoreButtonFieldName) {
+          valueArray[name] = $(obj).val();
+        }
+      });
+      $('input[type="radio"]:checked', form).each(function(i, obj) {
+        var name = $(obj).attr('name');
+        if (name != ignoreButtonFieldName) {
+          valueArray[name] = $(obj).val();
+        }
+      });
+      $('select', form).each(function(i, obj) {
         var name = $(obj).attr('name');
         if (name != ignoreButtonFieldName) {
           valueArray[name] = $(obj).val();
