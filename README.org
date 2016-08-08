@@ -23,6 +23,11 @@ You can use caveman2-widgets with Quicklisp!
 If you want to contribute or be always up to date you can clone this
 git-repository into "~/quicklisp/local-projects" or (if you are using
 [[https://github.com/roswell/roswell][Roswell]]) "~/.roswell/local-projects" to QUICKLOAD it.
+** Websites running caveman2-widgets
+- [[https://free-your-pc.com][Free-your-PC]] :: My personal website where I have among others a web
+                  shop
+
+Let me know if you use it too, to include you here!
 ** Contributions
 You are very welcomed to contribute to this project! You can contribute by:
 - Using it and spreading the word!
@@ -32,7 +37,7 @@ You are very welcomed to contribute to this project! You can contribute by:
   create either an [[https://github.com/ritschmaster/caveman2-widgets/issues][Issues]] or mail me. Maybe your feature is on my
   agenda too.
 - Showing your appreciation through a donation (please mail me for my
-  data).
+  data). It may be a donation in kind too!
 
 If you add new features, please document them. Otherwise other
 developers will have a hard time using this framework.
@@ -375,7 +380,10 @@ stateful widgets*.
 #+LATEX: \\\\
 Paths are only created automatically by the DEFNAV macro. The first
 item in the list is the widget which will be displayed at the base
-path of the navigation.
+path of the navigation. You can use any string as path but be careful
+to not interfere with the special paths of NINGLE
+(e.g. "/:some-path"). Do not use those. The only special path you can
+use is the wildcard (e.g "/*/").
 #+LATEX: \\\\
 A very basic example:
 #+BEGIN_SRC lisp

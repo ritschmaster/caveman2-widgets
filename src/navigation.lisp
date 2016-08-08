@@ -165,13 +165,19 @@ that: (list \"pagetitle\" \"uri-path\" <widget-for-pagetitle>)."
   "@param base-path The path for the navigation. Should have a starting \"/\".
 @param header-widget A <HEADER-WIDGET> for the navigation and it's children.
 @param pages A list of lists."
-  `(progn
+  `(let ((main-path (concatenate 'string
+                                 ,base-path
+                                 (if (char= (elt ,base-path
+                                                 (- (length ,base-path)
+                                                    1))
+                                            #\/)
+                                     ""
+                                     "/"))))
      (when (null (ningle:route *web*
-                               ,base-path
+                               main-path
                                :method :get))
        (setf (ningle:route *web*
-                           (concatenate 'string
-                                        ,base-path)
+                           main-path
                            :method :get)
              #'(lambda (params)
                  (with-html-document (doc
@@ -201,20 +207,12 @@ that: (list \"pagetitle\" \"uri-path\" <widget-for-pagetitle>)."
      (dolist (page ,pages)
        (when (null (ningle:route *web*
                                  (concatenate 'string
-                                              ,base-path
-                                              (if (= (length ,base-path)
-                                                     1)
-                                                  ""
-                                                  "/")
+                                              main-path
                                               (second page))
                                  :method :get))
          (setf (ningle:route *web*
                              (concatenate 'string
-                                          ,base-path
-                                          (if (= (length ,base-path)
-                                                 1)
-                                              ""
-                                              "/")
+                                          main-path
                                           (second page))
                              :method :get)
                #'(lambda (params)
