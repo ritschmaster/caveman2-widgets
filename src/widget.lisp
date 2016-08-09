@@ -161,9 +161,9 @@ this slot."))
   (declare (circle keyword))
   (setf (gethash *protection-circles-session-key*
                  *session*)
-        (remove (gethash *protection-circles-session-key*
-                         *session*)
-                circle)))
+        (remove circle
+                (gethash *protection-circles-session-key*
+                         *session*))))
 
 (defmethod initialize-instance :after ((this <widget>) &key)
   "
