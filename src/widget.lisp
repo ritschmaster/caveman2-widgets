@@ -11,6 +11,8 @@
         :caveman2
         :caveman2-widgets.util)
   (:export
+   :*protection-circles-session-key*
+
    :<widget>
    :render-widget-header
    :render-widget-body
@@ -20,8 +22,12 @@
    :id
    :widget-scope
    :protected
+   :authorized
+   :add-authorization
+   :remove-authorization
 
    :find-item
+   :protect-widget
 
    :set-widget-for-session
    :get-widget-for-session
@@ -39,6 +45,8 @@
    :*css-path*
    :*css-route*))
 (in-package :caveman2-widgets.widget)
+
+(defparameter *protection-circles-session-key* :protection-circles)
 
 (defvar *rest-path* "rest")
 (defvar *javascript-checker-path* "javascript-checker")
@@ -75,12 +83,14 @@ the given widget.")))
    (scope
     :reader widget-scope)
    (protected
-    :initform nil
+    :initform '()
     :initarg :protected
-    :accessor protected
-    :documentation "If NIL the widget is not procted. If non-nil it
-should be a keyword in the session which indicates that the
-requester is authorized to use the widget."))
+    :reader protected
+    :documentation "This is a list of protection circles. If NIL (or
+an empty list) the widget is not procted. If non-nil it should be a
+list of keywords. That list indicates which keywords (or authorized
+circles) the requester has in his session. Use PROTECT-WIDGET to use
+this slot."))
   (:documentation ""))
 
 (defmethod append-item ((this <widget-holder>) (item <widget>))
@@ -111,6 +121,49 @@ requester is authorized to use the widget."))
     (if ret-val
         (trivial-garbage:weak-pointer-value ret-val)
         nil)))
+
+(defgeneric protect-widget (widget for)
+  (:documentation "@return The WIDGET object."))
+
+(defmethod protect-widget ((widget <widget>) (for list))
+  "@param for A list of keywords"
+  (setf (slot-value widget 'protected)
+        (append (protected widget)
+                for))
+  widget)
+
+(defmethod protect-widget ((widget <widget>) (for symbol))
+  "@param for A keyword"
+  (setf (slot-value widget 'protected)
+        (append (protected widget)
+                (list for)))
+  widget)
+
+(defun authorized (widget &optional (session *session*))
+  (declare (<widget> widget))
+  (block search-circles
+    (loop for key in (protected widget) do
+         (when (not (find key
+                          (gethash *protection-circles-session-key*
+                                   *session*)))
+           (return-from search-circles nil)))
+    t))
+
+(defun add-authorization (circle &optional (session *session*))
+  (declare (circle keyword))
+  (setf (gethash *protection-circles-session-key*
+                 *session*)
+        (append (gethash *protection-circles-session-key*
+                         *session*)
+                (list circle))))
+
+(defun remove-authorization (circle &optional (session *session*))
+  (declare (circle keyword))
+  (setf (gethash *protection-circles-session-key*
+                 *session*)
+        (remove (gethash *protection-circles-session-key*
+                         *session*)
+                circle)))
 
 (defmethod initialize-instance :after ((this <widget>) &key)
   "
@@ -156,7 +209,7 @@ The REST can be accessed by the URI /*rest-path*/widget-name"
                         (and ;; protected and authorized
                          found-widget
                          (protected found-widget)
-                         (gethash (protected found-widget) *session*)))
+                         (authorized found-widget *session*)))
                        (render-widget-rest
                         found-widget
                         cur-method
@@ -164,7 +217,7 @@ The REST can be accessed by the URI /*rest-path*/widget-name"
                       ((and ;; protected and not authorized
                         found-widget
                         (protected found-widget)
-                        (not (gethash (protected found-widget) *session*)))
+                        (not (authorized found-widget *session*)))
                        (throw-code 403))
                       ((not found-widget) ;; not found
                        (throw-code 404))
@@ -185,7 +238,7 @@ transfer or embedded in another page."))
       (not (protected this)) ;; not proctected
       (and ;; protected and authorized
        (protected this)
-       (gethash (protected this) *session*)))
+       (authorized this *session*)))
      (demark-dirty this)
      (with-output-to-string (ret-val)
        (format ret-val

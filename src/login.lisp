@@ -27,25 +27,25 @@
    :login-authenticator
    :signout-hook
    :login-form
-   :logout-button
-
-   :protect-widget))
+   :logout-button))
 (in-package :caveman2-widgets.login)
 
 (defvar *login-authentication-keyword*
-  :logged-in-flag
+  :login
   "This variable holds the keyword which is used within the session to
 indicated that a session holder is logged in (or not).")
 
 (defgeneric logged-in (session))
 (defmethod logged-in ((session hash-table))
-  (gethash *login-authentication-keyword* *session*))
+  (find *login-authentication-keyword*
+        (gethash *protection-circles-session-key* *session*)))
 
 (defgeneric (setf logged-in) (value session))
 
 (defmethod (setf logged-in) (value (session hash-table))
-  (setf (gethash *login-authentication-keyword* *session*)
-        value))
+  (if value
+      (add-authorization *login-authentication-keyword* *session*)
+      (remove-authorization *login-authentication-keyword* *session*)))
 
 (defclass <login-widget> (<composite-widget>)
   ((login-authenticator
@@ -134,11 +134,3 @@ indicate that the login procedure did not work.")
                  (setf (login-failed this) nil)
                  (funcall +translate+ "Your sign in attempt has failed!"))
                ""))))))
-
-(defgeneric protect-widget (widget for)
-  (:documentation "@return The WIDGET object."))
-
-(defmethod protect-widget ((widget <widget>) (for (eql :login)))
-  (setf (protected widget)
-        *login-authentication-keyword*)
-  widget)

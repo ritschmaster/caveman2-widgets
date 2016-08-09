@@ -34,10 +34,14 @@
    :*language-key-in-session*
 
    ;; from caveman2-widgets.widget
+   :*protection-circles-session-key*
+
    :<widget>
    :id
    :widget-scope
    :protected
+   :authorized
+   :protect-widget
    :make-widget
    :render-widget
    :render-widget-rest
@@ -122,8 +126,6 @@
    :signout-hook
    :login-form
    :logout-button
-
-   :protect-widget
 
    ;; from caveman2-widgets.document
    :*jquery-cdn-link*
