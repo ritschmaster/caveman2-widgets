@@ -150,7 +150,7 @@ this slot."))
     t))
 
 (defun add-authorization (circle &optional (session *session*))
-  (declare (circle keyword))
+  (declare (keyword circle))
   (setf (gethash *protection-circles-session-key*
                  *session*)
         (append (gethash *protection-circles-session-key*
@@ -158,7 +158,7 @@ this slot."))
                 (list circle))))
 
 (defun remove-authorization (circle &optional (session *session*))
-  (declare (circle keyword))
+  (declare (keyword circle))
   (setf (gethash *protection-circles-session-key*
                  *session*)
         (remove circle
