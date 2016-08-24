@@ -114,7 +114,9 @@
    (other-header-content
     :initform '()
     :initarg :other-header-content
-    :reader other-header-content)))
+    :reader other-header-content
+    :documentation "A list of strings that will be directly put in the
+header tag.")))
 
 (defmethod render-widget ((this <header-widget>))
   (with-output-to-string (ret-val)
@@ -124,6 +126,10 @@
             (if (title this)
                 (funcall +translate+ (title this))))
     (format ret-val "<meta charset=\"~a\">" (charset this))
+
+    (dolist (other-header-content-line (other-header-content this))
+      (format ret-val other-header-content-line))
+
     (when (icon-path this)
       (format ret-val "<link href=\"~a\" type=\"image/~a\" rel=\"icon\">"
               (icon-path this)
