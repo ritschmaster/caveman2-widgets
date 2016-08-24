@@ -79,6 +79,7 @@ the given widget.")))
 (defclass <widget> ()
   ((id
     :initform (symbol-name (gensym))
+    :initarg :id
     :reader id)
    (scope
     :reader widget-scope)
