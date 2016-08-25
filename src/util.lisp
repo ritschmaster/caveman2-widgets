@@ -27,6 +27,7 @@
    :get-trimmed-class-name
    :clean-list-of-broken-links
    :get-value-for-cons-list
+   :has-trailing-slash
    :string-case-insensitive=
    :javascript-available
    :check-and-set-language
@@ -150,6 +151,14 @@
 
 (defmethod find-item ((this t) (item t))
   (error "Not supported yet!"))
+
+(defun has-trailing-slash (str)
+  (declare (string str))
+  (let ((len (length str)))
+    (string= (subseq str
+                     (1- len)
+                     len)
+             "/")))
 
 (defun string-case-insensitive= (str1 str2)
   (string= (string-downcase str1)

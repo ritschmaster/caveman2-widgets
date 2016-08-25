@@ -58,6 +58,7 @@ and it should look like: (list (list \"pagetitle\" \"uri-path\" <widget>))")
     :documentation "Determines the path for this navigation. It does
 not need an initial or trailing forward slash.")
    (session-tag
+    :initform (error "Must supply a tag for the session.")
     :initarg :session-tag
     :accessor session-tag))
   (:documentation "This is an abstract widget which implements all
@@ -108,37 +109,38 @@ that: (list \"pagetitle\" \"uri-path\" <widget-for-pagetitle>)."
   (setf (body this)
         (let ((str-widget (make-widget :session '<string-widget>))
               (current-widget nil))
-          (setf (text str-widget)
-                (with-output-to-string (ret-val)
-                  (format ret-val "<ul class=\"navigation-widget-links\">")
-                  (dolist (page (pages this))
-                    (when (not (find :hidden page))
-                      (format ret-val "<li>")
-                      (format ret-val (render-widget
-                                       (make-widget
-                                        :session '<link-widget>
-                                        :label (first page)
-                                        :callback #'(lambda (params)
-                                                      (setf (current-page this) (second page))
-                                                      (concatenate 'string
-                                                                   (subseq
-                                                                    (base-path this) 1)
-                                                                   (if (= (length
-                                                                           (base-path this))
-                                                                          1)
-                                                                       ""
-                                                                       "/")
-                                                                   (second page))))))
-                      (format ret-val "</li>"))
-                    (when (string= (second page)
-                                   (current-page this))
-                      (setf current-widget (third page))))
-                  (when (null current-widget)
-                    (setf current-widget (third (first (pages this)))))
-                  (setf (slot-value (composite this) 'widgets)
-                        (list current-widget))
-                  (format ret-val "</ul>")
-                  (format ret-val (render-widget (composite this)))))
+          (setf
+           (text str-widget)
+           (with-output-to-string (ret-val)
+             (format ret-val "<ul class=\"navigation-widget-links\">")
+             (dolist (page (pages this))
+               (when (not (find :hidden page))
+                 (format ret-val "<li>")
+                 (format ret-val
+                         (render-widget
+                          (make-widget
+                           :session '<link-widget>
+                           :label (first page)
+                           :callback
+                           #'(lambda (params)
+                               (setf (current-page this) (second page))
+                               (concatenate 'string
+                                            (base-path this)
+                                            (if (has-trailing-slash
+                                                 (base-path this))
+                                                ""
+                                                "/")
+                                            (second page))))))
+                 (format ret-val "</li>"))
+               (when (string= (second page)
+                              (current-page this))
+                 (setf current-widget (third page))))
+             (when (null current-widget)
+               (setf current-widget (third (first (pages this)))))
+             (setf (slot-value (composite this) 'widgets)
+                   (list current-widget))
+             (format ret-val "</ul>")
+             (format ret-val (render-widget (composite this)))))
           str-widget))
   (call-next-method this))
 
@@ -185,9 +187,12 @@ that: (list \"pagetitle\" \"uri-path\" <widget-for-pagetitle>)."
                    (setf (body doc)
                          (progn
                            (when (null (get-widget-for-session ,session-key))
-                             (set-widget-for-session ,session-key (make-widget :session
-                                                                               ,kind))
-                             (let ((navigation-widget (get-widget-for-session ,session-key)))
+                             (set-widget-for-session ,session-key
+                                                     (make-widget :session ,kind
+                                                                  :session-tag
+                                                                  ,session-key))
+                             (let ((navigation-widget
+                                    (get-widget-for-session ,session-key)))
                                (setf (slot-value navigation-widget 'composite)
                                      (make-widget :session '<composite-widget>))
                                (dolist (page ,pages)
@@ -221,9 +226,12 @@ that: (list \"pagetitle\" \"uri-path\" <widget-for-pagetitle>)."
                      (setf (body doc)
                            (progn
                              (when (null (get-widget-for-session ,session-key))
-                               (set-widget-for-session ,session-key (make-widget :session
-                                                                                 ,kind))
-                               (let ((navigation-widget (get-widget-for-session ,session-key)))
+                               (set-widget-for-session ,session-key
+                                                       (make-widget :session ,kind
+                                                                    :session-tag
+                                                                    ,session-key))
+                               (let ((navigation-widget
+                                      (get-widget-for-session ,session-key)))
                                  (setf (slot-value navigation-widget 'composite)
                                        (make-widget :session '<composite-widget>))
                                  (dolist (page ,pages)
@@ -235,7 +243,8 @@ that: (list \"pagetitle\" \"uri-path\" <widget-for-pagetitle>)."
                                    (setf (header navigation-widget)
                                          ,header-widget))))
 
-                             (let ((navigation-widget (get-widget-for-session ,session-key)))
+                             (let ((navigation-widget
+                                    (get-widget-for-session ,session-key)))
                                (setf (current-page navigation-widget)
                                      (second page))
                                navigation-widget)))
