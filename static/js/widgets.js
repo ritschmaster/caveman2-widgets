@@ -14,10 +14,10 @@ $(document).ready(function() {
   var ignoreButtonFieldName = "oldUri";
 
   function baseName(str) {
-   var base = new String(str).substring(str.lastIndexOf('/') + 1);
+    var base = new String(str).substring(str.lastIndexOf('/') + 1);
     if(base.lastIndexOf(".") != -1)
-        base = base.substring(0, base.lastIndexOf("."));
-   return base;
+      base = base.substring(0, base.lastIndexOf("."));
+    return base;
   }
 
   function nameString(str) {
@@ -81,9 +81,13 @@ $(document).ready(function() {
       });
     });
 
+    /**
+     * Event when going to a specific page through the navigation.
+     */
     $('.navigation-widget-links li a', context).click(function(e) {
       e.preventDefault();
       var URL = $(this).attr('href');
+
       $.ajax({
         url: URL,
         type: "POST",
@@ -100,6 +104,36 @@ $(document).ready(function() {
       });
     });
 
+    /**
+     * Event when going back from a specific page.
+     */
+    window.onpopstate = function(event) {
+      event.preventDefault();
+      var pathname = document.location.pathname;
+      var hiddenInputToSearch = pathname.substring(pathname.lastIndexOf("/") + 1);
+      var hiddenInput = $('.navigation-widget-links li');
+      var URL = null;
+      hiddenInput.each(function(i, obj) {
+        var children = $(obj).children();
+        if (children[0] && children[1]
+            && $(children[1]).val() == hiddenInputToSearch) {
+          URL = $(children[0]).attr('href');
+        }
+      });
+
+      if (URL != null) {
+        $.ajax({
+          url: URL,
+          type: "POST",
+          error: function(jqXHR, status, errorMsg) {
+          },
+          success: function(data, status, jqXHR) {
+            processDirty();
+          }
+        });
+      }
+    };
+
     $('.link-widget a', context).click(function(e) {
       e.preventDefault();
       var URL = $(this).attr('href');
@@ -113,7 +147,7 @@ $(document).ready(function() {
           var title = data;
           var url = data;
           if (("/" + url) == window.location.pathname
-             || url == "") {
+              || url == "") {
 
           } else if (document.caveman2widgets.doTheJump) {
             window.location.href = url;
