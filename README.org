@@ -37,7 +37,8 @@ You are very welcomed to contribute to this project! You can contribute by:
   create either an [[https://github.com/ritschmaster/caveman2-widgets/issues][Issues]] or mail me. Maybe your feature is on my
   agenda too.
 - Showing your appreciation through a donation (please mail me for my
-  data). It may be a donation in kind too!
+  IBAN). It may be a donation in kind too! Via PayPal you can donate
+  to: richard.baeck@free-your-pc.com
 
 If you add new features, please document them. Otherwise other
 developers will have a hard time using this framework.
@@ -928,6 +929,8 @@ which you should absolutely not modify.
 ** See also
 - [[https://github.com/ritschmaster/caveman2-widgets-bootstrap][caveman2-widgets-bootstrap]] :: Introduces new widgets that use
      [[https://getbootstrap.com/][Bootstrap]].
+- [[https://github.com/ritschmaster/caveman2-widgets-blog][caveman2-widgets-blog]] :: An example application to demonstrate
+     caveman2-widgets
 
 ** Author
 
