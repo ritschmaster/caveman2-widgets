@@ -84,7 +84,14 @@
 
 (defclass <header-widget> ()
   ((css-files
-    :initform '()
+    :initform
+    (list
+     (make-instance '<css-file>
+                    :path
+                    (concatenate 'string
+                                 *css-path*
+                                 "/"
+                                 *widgets-css-filename*)))
     :reader css-files)
    (js-files
     :initform

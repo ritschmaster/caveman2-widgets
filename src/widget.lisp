@@ -42,6 +42,7 @@
    :*web*
    :*javascript-path*
    :*widgets-js-filename*
+   :*widgets-css-filename*
    :*css-path*
    :*css-route*))
 (in-package :caveman2-widgets.widget)
@@ -64,6 +65,9 @@
 (defvar *widgets-js-filename* "widgets.js"
   "The filename of the JavaScript file which manages all standard widget
 functionality.")
+(defvar *widgets-css-filename* "widgets.css"
+  "The filename of the CSS file which manages all standard widget
+styles.")
 
 
 (defclass <widget-holder> ()

@@ -42,7 +42,9 @@
    :view
    :on-view
    :on-view-label
-   :max-items-to-display))
+   :max-items-to-display
+
+   :<border-widget>))
 (in-package :caveman2-widgets.widgets)
 
 (defclass <string-widget> (<widget>)
@@ -435,3 +437,43 @@ accessed on the page /view.")
                 (render-widget
                  (slot-value this 'next-button)))
         (format ret-val "</div>")))))
+
+(defclass <border-widget> (<widget>)
+  ((north
+    :initarg :north
+    :initform nil
+    :accessor north)
+   (east
+    :initarg :east
+    :initform nil
+    :accessor east)
+   (south
+    :initarg :south
+    :initform nil
+    :accessor south)
+   (west
+    :initarg :west
+    :initform nil
+    :accessor west)
+   (center
+    :initarg :center
+    :initform nil
+    :accessor center)))
+
+(defmethod render-widget ((this <border-widget>))
+  (with-output-to-string (ret-val)
+    (when (north this)
+      (format ret-val "<div class=\"north\">~a</div>"
+              (render-widget (north this))))
+    (when (east this)
+      (format ret-val "<div class=\"east\">~a</div>"
+              (render-widget (east this))))
+    (when (south this)
+      (format ret-val "<div class=\"south\">~a</div>"
+              (render-widget (south this))))
+    (when (west this)
+      (format ret-val "<div class=\"west\">~a</div>"
+              (render-widget (west this))))
+    (when (center this)
+      (format ret-val "<div class=\"center\">~a</div>"
+              (render-widget (center this))))))

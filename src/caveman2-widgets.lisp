@@ -79,6 +79,8 @@
    :on-view-label
    :max-items-to-display
 
+   :<border-widget>
+
    ;; from caveman2-widgets.callback-widget
    :get-from-callback-args
 
@@ -207,12 +209,15 @@ libraries/applications that need those variables at compile time.")
                        *js-directory*)
     *web*
     "text/javascript; charset=utf-8")
-  ;; (defroute-static
-  ;;     (concatenate 'string
-  ;;                  *css-path*
-  ;;                  "/widgets.css")
-  ;;     (merge-pathnames #P"widgets.css" *js-directory*)
-  ;;   *web*)
+  (defroute-static
+      (concatenate 'string
+                   *css-path*
+                   "/"
+                   *widgets-css-filename*)
+      (merge-pathnames (pathname *widgets-css-filename*)
+                       *css-directory*)
+    *web*
+    "text/css; charset=utf-8")
 
   (setf (ningle:route *web*
                       (concatenate 'string
