@@ -11,7 +11,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (in-package :cl-user)
-(defpackage caveman2-widgets.widgets
+(defpackage caveman2-widgets.default-widgets
   (:use :cl
         :caveman2
         :caveman2-widgets.util
@@ -45,7 +45,7 @@
    :max-items-to-display
 
    :<border-widget>))
-(in-package :caveman2-widgets.widgets)
+(in-package :caveman2-widgets.default-widgets)
 
 (defclass <string-widget> (<widget>)
   ((text

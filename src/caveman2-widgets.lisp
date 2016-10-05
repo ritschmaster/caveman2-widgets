@@ -11,7 +11,7 @@
         :caveman2
         :caveman2-widgets.util
         :caveman2-widgets.widget
-        :caveman2-widgets.widgets
+        :caveman2-widgets.default-widgets
         :caveman2-widgets.callback-widget
         :caveman2-widgets.login
         :caveman2-widgets.document
@@ -52,7 +52,7 @@
 
    :mark-dirty
 
-   ;; from caveman2-widgets.widgets
+   ;; from caveman2-widgets.default-widgets
    :<string-widget>
    :text
 
