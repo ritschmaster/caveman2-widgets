@@ -14,6 +14,12 @@ your site for dynamically (JavaScript based) access *and* normal
 access. For the dynamic approach this means that you don't have to
 manage or even care to refresh parts of your website, because widgets
 can do that by themselves!
+
+#+CAPTION: Quick overview where caveman2-widgets is in the caveman2 ecosystem
+#+ATTR_LATEX: :width 10cm
+#+LABEL: fig:overview
+file:overview.jpg
+
 ** Installation
 You can use caveman2-widgets with Quicklisp!
 #+BEGIN_SRC lisp
