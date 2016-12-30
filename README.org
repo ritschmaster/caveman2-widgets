@@ -29,6 +29,12 @@ You can use caveman2-widgets with Quicklisp!
 If you want to contribute or be always up to date you can clone this
 git-repository into "~/quicklisp/local-projects" or (if you are using
 [[https://github.com/roswell/roswell][Roswell]]) "~/.roswell/local-projects" to QUICKLOAD it.
+** See also
+- [[https://github.com/ritschmaster/caveman2-widgets-bootstrap][caveman2-widgets-bootstrap]] :: Introduces new widgets that use
+     [[https://getbootstrap.com/][Bootstrap]].
+- [[https://github.com/ritschmaster/caveman2-widgets-blog][caveman2-widgets-blog]] :: An example application to demonstrate
+     caveman2-widgets
+
 ** Websites running caveman2-widgets
 - [[https://free-your-pc.com][Free-your-PC]] :: My personal website where I have among others a web
                   shop
@@ -636,10 +642,11 @@ The following example covers all functionality:
           (get-widget-for-session :viewgrid))))
 #+END_SRC
 *** Forms
-Forms can pretty annoying but with the <FORM-WIDGET> you don't have to
-care for anything but for the naming of the inputs. Each <FORM-WIDGET>
-consists for 0 to n <FORM-FIELD> objects. If you have 0
-<FORM-FIELD> it essentially only behaves like a <BUTTON-WIDGET>.
+Forms can be pretty annoying but with the <FORM-WIDGET> you don't have
+to care for anything but for the naming of the inputs ever again. Each
+<FORM-WIDGET> consists of 0 to n <FORM-FIELD> objects. If you have 0
+<FORM-FIELD> objects it essentially only behaves like a
+<BUTTON-WIDGET>.
 #+LATEX: \\\\
 <FORM-FIELD> is the base class for fields. Fields can be:
 - <INPUT-FIELD> :: Is basically an abstraction of the HTML input-tag. 
@@ -839,10 +846,10 @@ AUTOMATICALLY-SET-LANGUAGES as NIL to the INIT-WIDGETS
 function. Please then use the setf method for ACCEPTED-LANGUAGES to
 set the language.
 *** Translations
-Most strings that are rendered for a human readable get translated
-through a special function. You can specify you own translation
-function by passing it to INIT-WIDGETS as :TRANSLATION-FUNCTION. The
-function header should look like this:
+Most strings that are rendered human readable get translated through a
+special function. You can specify your own translation function by
+passing it to INIT-WIDGETS as :TRANSLATION-FUNCTION. The function
+header should look like this:
 #+BEGIN_SRC lisp
 (defvar *my-translation-function*
          #'(lambda (text
@@ -885,8 +892,8 @@ caveman2-widgets.
 
 *** Automatically REST API creation
 If you create a widget then routes for a REST API will be added
-automatically. Suppose you subclass <widget> with the class
-"<my-widget>", then you will get the path "/rest/my-widget" which you
+automatically. Suppose you subclass <WIDGET> with the class
+<MY-WIDGET>, then you will get the path "/rest/my-widget" which you
 can access.
 
 #+BEGIN_SRC lisp
@@ -903,7 +910,7 @@ can access.
   (render-widget this))
 #+END_SRC
 
-Buttons and Links are not accessed through the /rest/ path (see the
+Buttons and Links are *not* accessed through the REST path (see the
 section above).
 
 Widgets that are not accessible through the REST:
@@ -928,7 +935,7 @@ HTML file) are:
 - /widgets/js/widgets.js
 
 The jQuery-Version used is 2.2.2 minified. If you want another jQuery
-file you can specify it with the variable *jquery-cdn-link* (should be
+file you can specify it with the variable \*jquery-cdn-link\* (should be
 an URL).
 
 *If you forget to use the JavaScript-files widgets might not work or
@@ -943,17 +950,12 @@ too. The routes you need in your head tag are:
 *** Session values
 This section should inform you about keywords in the session variable
 which you should absolutely not modify.
-- :WIDGET-HOLDER :: <WIDGET-HOLDER> object.
-- :DIRTY-OBJECT-IDS :: The name tells it all.
+- :WIDGET-HOLDER :: <WIDGET-HOLDER> object. It holds all the session
+                    scoped widgets.
+- :DIRTY-OBJECT-IDS :: The name says it all.
 - :JAVASCRIPT-AVAILABLE :: Holds a boolean value if JavaScript is
      available or not.
 - :ACCEPT-LANGUAGE :: Holds the languages accepted by the client.
-
-** See also
-- [[https://github.com/ritschmaster/caveman2-widgets-bootstrap][caveman2-widgets-bootstrap]] :: Introduces new widgets that use
-     [[https://getbootstrap.com/][Bootstrap]].
-- [[https://github.com/ritschmaster/caveman2-widgets-blog][caveman2-widgets-blog]] :: An example application to demonstrate
-     caveman2-widgets
 
 ** Author
 
