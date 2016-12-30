@@ -18,7 +18,7 @@ can do that by themselves!
 #+CAPTION: Quick overview where caveman2-widgets is in the caveman2 ecosystem
 #+ATTR_LATEX: :width 10cm
 #+LABEL: fig:overview
-file:overview.jpg
+[[overview.jpg]]
 
 ** Installation
 You can use caveman2-widgets with Quicklisp!
