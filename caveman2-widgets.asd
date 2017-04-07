@@ -23,5 +23,5 @@
                            (:file "navigation")
                            (:file "caveman2-widgets"))))
     :description "Weblocks like widgets for caveman2."
-    :long-description #.(read-file-string (subpathname *load-pathname* "README"))
+    :long-description #.(read-file-string (subpathname *load-pathname* "README.org"))
     :in-order-to ((test-op (test-op "caveman2-widgets-test"))))
