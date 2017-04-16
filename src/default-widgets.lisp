@@ -44,7 +44,11 @@
    :on-view-label
    :max-items-to-display
 
-   :<border-widget>))
+   :<border-widget>
+   :north
+   :east
+   :west
+   :south))
 (in-package :caveman2-widgets.default-widgets)
 
 (defclass <string-widget> (<widget>)

@@ -80,6 +80,10 @@
    :max-items-to-display
 
    :<border-widget>
+   :north
+   :east
+   :west
+   :south
 
    ;; from caveman2-widgets.callback-widget
    :get-from-callback-args
